@@ -1,0 +1,139 @@
+{% extends 'vibemusic/base.html' %}
+{% load static %}
+
+{% block nav %}
+<!-- Пустой блок, чтобы убрать меню -->
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-0">
+    <!-- Шапка -->
+    <div class="header-image position-relative" style="background-image: url('{% if post.images.first %}{{ post.images.first.image.url }}{% else %}{% static 'vibemusic/images/placeholder.jpg' %}{% endif %}');">
+        <div class="overlay"></div>
+        <div class="header-content position-absolute top-0 w-100">
+            <div class="container">
+                <h1 class="logo text-white mb-0">
+                    {% if post.artist %}
+                        <a href="{% url 'vibemusic:artist_detail' post.artist.id %}" class="text-white text-decoration-none">{{ post.artist.name }}</a>
+                    {% else %} Неизвестный автор {% endif %}
+                </h1>
+            </div>
+        </div>
+    </div>
+
+    <div class="container mt-4">
+        {% if artist_bio %}
+
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#artistBioModal">Биография</button>
+        {% endif %}
+
+        <div class="mb-4">
+            <h5>Цитаты из композиций {{ post.title }}</h5>
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#postContentModal">Читать</button>
+        </div>
+
+        <!-- Плеер без длинных блоков -->
+        {% if post.tracks.all %}
+            <div class="music-player-container d-flex flex-wrap gap-3">
+                {% for track in post.tracks.all %}
+                    <div class="track text-center">
+                        <div class="album-cover position-relative" data-src="{{ track.audio_file.url }}">
+                            <img src="{% if track.album_image %}{{ track.album_image.url }}{% else %}{% static 'vibemusic/images/placeholder.jpg' %}{% endif %}" 
+                                class="album-image" style="width: 100px; height: 100px; object-fit: cover; cursor: pointer;">
+                            <button class="play-button position-absolute top-50 start-50 translate-middle">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="white" class="bi bi-play-fill play-icon" viewBox="0 0 16 16">
+                                    <path d="M11.596 8.697l-6.363 3.692c-.54.313-1.233-.066-1.233-.697V4.308c0-.63.692-1.01 1.233-.696l6.363 3.692a.802.802 0 0 1 0 1.393z"/>
+                                </svg>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="white" class="bi bi-pause-fill pause-icon" viewBox="0 0 16 16" style="display: none;">
+                                    <path d="M5.5 3.5A1.5 1.5 0 0 1 7 5v6a1.5 1.5 0 0 1-3 0V5a1.5 1.5 0 0 1 1.5-1.5zm5 0A1.5 1.5 0 0 1 12 5v6a1.5 1.5 0 0 1-3 0V5a1.5 1.5 0 0 1 1.5-1.5z"/>
+                                </svg>
+                            </button>
+                        </div>
+                        <p class="track-title mt-2 mb-0">{{ track.title }}</p>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <!-- Нижний плеер -->
+        <div class="audio-player container-fluid fixed-bottom bg-dark p-2" style="display: none;">
+            <audio controls class="w-100">
+                <source src="" type="audio/mpeg">
+                Ваш браузер не поддерживает аудиоплеер.
+            </audio>
+        </div>
+
+        <!-- Комментарии и форма -->
+        <h3 class="mt-5 mb-3">Комментарии</h3>
+        {% for comment in page_obj %}
+            <div class="mb-3 border-bottom pb-2">
+                <p><strong>{{ comment.user.username }}</strong>: {{ comment.content }} <small class="text-muted">({{ comment.created_at|date:"d.m.Y H:i" }})</small></p>
+                {% for reply in comment.replies.all %}
+                    <p class="ms-3">↳ <strong>{{ reply.user.username }}</strong>: {{ reply.content }}</p>
+                {% endfor %}
+            </div>
+        {% empty %}
+            <p class="text-muted">Нет комментариев.</p>
+        {% endfor %}
+
+        {% if page_obj.has_other_pages %}
+            <nav class="mt-4"><ul class="pagination">
+                {% if page_obj.has_previous %}
+                    <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">Назад</a></li>
+                {% endif %}
+                <li class="page-item active"><span class="page-link">Страница {{ page_obj.number }} из {{ page_obj.paginator.num_pages }}</span></li>
+                {% if page_obj.has_next %}
+                    <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">Вперёд</a></li>
+                {% endif %}
+            </ul></nav>
+        {% endif %}
+
+        {% if user.is_authenticated %}
+            <form method="post" action="{% url 'vibemusic:add_comment' post.slug %}" class="mt-4">
+                {% csrf_token %}
+                {{ form.as_p }}
+                <button type="submit" class="btn btn-primary">Отправить</button>
+            </form>
+        {% else %}
+            <p class="text-muted mt-3"><a href="{% url 'login' %}" class="text-white">Войдите</a>, чтобы оставить комментарий.</p>
+        {% endif %}
+
+        <!-- Модальные окна -->
+        <div class="modal fade" id="postContentModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content bg-dark text-white">
+                    <div class="modal-header">
+                        <h5 class="modal-title">{{ post.title }}</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">{{ post.content|linebreaks }}</div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {% if artist_bio %}
+            <div class="modal fade" id="artistBioModal" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content bg-dark text-white">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Биография: {{ post.artist.name }}</h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">{{ artist_bio|linebreaks }}</div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Подключение CSS и JS -->
+<link rel="stylesheet" href="{% static 'vibemusic/css/styles.css' %}">
+<script src="{% static 'vibemusic/js/music_player.js' %}"></script>
+{% endblock %}

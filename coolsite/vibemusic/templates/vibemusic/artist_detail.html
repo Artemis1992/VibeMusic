@@ -1,0 +1,42 @@
+<!-- artist_detail.html -->
+{% extends 'vibemusic/base.html' %}
+
+{% block title %}{{ artist.name }} - VibeMusic{% endblock %}
+
+{% block content %}
+    <h1>{{ artist.name }}</h1>
+    {% if artist.photo %}
+        <img src="{{ artist.photo.url }}" alt="{{ artist.name }}" class="img-fluid" style="max-width: 200px;">
+    {%endif %}
+    <p>{{ artist.bio }}</p>
+    <h3>Жанры</h3>
+    <ul>
+        {% for genre in artist.genres.all %}
+            <li>
+                {% if genre.icon %}
+                    <img src="{{ genre.icon.url }}" alt="{{ genre.name }}" style="width: 20px;">
+                {% endif %}
+                {{ genre.name }}
+            </li>
+        {% endfor %}
+    </ul>
+    <h3>Треки</h3>
+    {% for track in artist.tracks.all %}
+        <div>
+            <h5>{{ track.title }}</h5>
+            <audio controls>
+                <source src="{{ track.audio_file.url }}" type="audio/mpeg">    
+            </audio>
+            {% if track.is_downloadable %}
+                <a href="{{ track.audio_file.url }}" download>Скачать</a>
+            {% endif %}
+        </div>
+    {% endfor %}
+    <h3>Посты</h3>
+    {%for post in artist.posts.all %}
+        <div class="card mb-3">
+            <h2>{{ post.title }}</h2>
+            <p>{{ post.content }}</p>
+        </div>
+    {% endfor %}
+{% endblock %}

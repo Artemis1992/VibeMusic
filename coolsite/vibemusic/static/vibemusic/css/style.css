@@ -1,0 +1,200 @@
+/* Сброс стандартных стилей */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* Тёмная тема */
+body {
+    background-color: #1a1a1a;
+    color: #ffffff;
+    font-family: Arial, sans-serif;
+    line-height: 1.6;
+}
+
+header {
+    background-color: #2c2c2c;
+    padding: 20px;
+    text-align: center;
+}
+
+h1 {
+    font-size: 2.5rem;
+}
+
+main {
+    max-width: 800px;
+    margin: 20px auto;
+    padding: 0 20px;
+}
+
+footer {
+    background-color: #2c2c2c;
+    text-align: center;
+    padding: 10px;
+    width: 100%;
+}
+
+.form-control {
+    margin-bottom: 10px;
+    background-color: #2c2c2c;
+    color: #ffffff;
+    border: 1px solid #444;
+}
+
+.alert-success {
+    background-color: #d4edda;
+    color: #155724;
+    padding: 10px;
+    margin-bottom: 15px;
+}
+
+.alert-danger {
+    background-color: #f8d7da;
+    color: #721c24;
+    padding: 10px;
+    margin-bottom: 15px;
+}
+
+/* Стили для постов на главной */
+.card {
+    border: none;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.post-image {
+    position: relative;
+    min-height: 300px;
+}
+
+/* Стили для сворачиваемой биографии */
+.collapse {
+    margin-top: 10px;
+}
+
+.card-body {
+    background-color: transparent;
+}
+
+/* Стили для пагинатора */
+.pagination .page-link {
+    background-color: #2c2c2c;
+    color: #ffffff;
+    border: 1px solid #444;
+}
+
+.pagination .page-item.active .page-link {
+    background-color: #007bff;
+    border-color: #007bff;
+}
+
+/* Стили для формы комментариев */
+textarea.form-control {
+    resize: vertical;
+    min-height: 100px;
+}
+
+/* Шапка */
+.header-image {
+    height: 300px;
+    background-size: cover;
+    background-position: 50% 20%; /* Смещаем фокус вверх, чтобы лица были видны */
+    position: relative;
+}
+.overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+}
+.logo {
+    font-size: 2.5rem;
+    font-weight: bold;
+}
+
+/* Плеер */
+.music-player-container .track {
+    width: 100px;
+}
+.album-cover {
+    position: relative;
+    width: 100px;
+    height: 100px;
+    border-radius: 50%; /* Делаем контейнер круглым */
+    overflow: hidden; /* Обрезаем изображение по кругу */
+}
+.album-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+    border-radius: 50%; /* Делаем обложку круглой */
+}
+.album-cover.playing .album-image {
+    animation: spin 4s linear infinite;
+}
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+.play-button {
+    background: rgba(0, 0, 0, 0.5);
+    border: none;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+.play-button:hover {
+    background: rgba(0, 0, 0, 0.7);
+}
+.audio-player {
+    z-index: 1000;
+}
+.track-title {
+    font-size: 0.9rem; /* Размер шрифта */
+    color: #ffffff; /* Белый текст для темной темы */
+    white-space: nowrap; /* Предотвращает перенос текста */
+    overflow: hidden; /* Обрезает длинный текст */
+    text-overflow: ellipsis; /* Добавляет многоточие для длинных названий */
+    max-width: 100px; /* Ограничивает ширину текста */
+}
+
+/* Стили для кнопок */
+.btn-primary {
+    background-color: #ff5733; /* Оранжевый для кнопки "Биография", "Читать", "Отправить" */
+    border-color: #ff5733;
+    color: #ffffff;
+}
+.btn-primary:hover {
+    background-color: #cc4500; /* Темно-оранжевый при наведении */
+    border-color: #cc4500;
+}
+.btn-secondary {
+    background-color: #28a745; /* Зеленый для кнопки "Закрыть" */
+    border-color: #28a745;
+    color: #ffffff;
+}
+.btn-secondary:hover {
+    background-color: #218838; /* Темно-зеленый при наведении */
+    border-color: #218838;
+}
+.btn-close-white {
+    background-color: transparent;
+    filter: invert(1); /* Белый крестик */
+}
+.btn-close-white:hover {
+    filter: invert(0.7); /* Слегка затемнить при наведении */
+}
+
+/* Сохранение абзацев в модальном окне */
+.modal-body {
+    white-space: pre-wrap; /* Сохраняет пробелы и переносы строк */
+}

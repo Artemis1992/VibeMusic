@@ -1,0 +1,52 @@
+{% load static %}
+
+<div class="music-player-container">
+    <h3>Треки</h3>
+    {% if post.tracks.all %}
+        {% for track in post.tracks.all %}
+        <div class="track mb-3 d-flex align-items-center">
+            <!-- Квадратный винил с кнопкой Play -->
+            <div class="album-cover me-3 position-relative" data-src="{{ track.audio_file.url }}">
+                <img src="{% if track.album_image %}{{ track.album_image.url }}{% else %}{% static 'vibemusic/images/placeholder.jpg' %}{% endif %}" 
+                     alt="{{ track.title }} cover" 
+                     class="album-image" 
+                     style="width: 100px; height: 100px; object-fit: cover; cursor: pointer;">
+                <button class="play-button position-absolute top-50 start-50 translate-middle">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="white" class="bi bi-play-fill" viewBox="0 0 16 16">
+                        <path d="M11.596 8.697l-6.363 3.692c-.54.313-1.233-.066-1.233-.697V4.308c0-.63.692-1.01 1.233-.696l6.363 3.692a.802.802 0 0 1 0 1.393z"/>
+                    </svg>
+                </button>
+            </div>
+            <!-- Информация о треке -->
+            <div class="track-info flex-grow-1">
+                <p class="mb-1">{{ track.title }} - {{ track.artist.name }}</p>
+            </div>
+            <!-- Кнопка с тремя точками (меню действий) -->
+            <div class="dropdown ms-3">
+                <button class="btn btn-link text-white p-0" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-three-dots" viewBox="0 0 16 16">
+                        <path d="M3 9.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z"/>
+                    </svg>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-dark">
+                    <li><a class="dropdown-item" href="{{ track.audio_file.url }}" download>Скачать</a></li>
+                </ul>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <p class="text-muted">Нет треков для этого поста.</p>
+    {% endif %}
+
+    <!-- Плеер (скрыт по умолчанию) -->
+    <div class="audio-player container-fluid fixed-bottom bg-dark p-2" style="display: none;">
+        <audio controls class="w-100">
+            <source src="" type="audio/mpeg">
+            Ваш браузер не поддерживает аудиоплеер.
+        </audio>
+    </div>
+</div>
+
+<!-- Подключение CSS и JS файлов -->
+<link rel="stylesheet" href="{% static 'vibemusic/css/music_player.css' %}">
+<script src="{% static 'vibemusic/js/music_player.js' %}"></script>

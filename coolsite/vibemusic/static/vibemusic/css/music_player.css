@@ -1,0 +1,69 @@
+.music-player-container {
+    max-width: 100%;
+    padding: 1rem;
+    background: #1a1a1a;
+    border-radius: 10px;
+}
+.track {
+    background: #2a2a2a;
+    padding: 10px;
+    border-radius: 8px;
+}
+.album-cover {
+    position: relative;
+    width: 100px;
+    height: 100px;
+}
+.album-image {
+    transition: transform 0.3s ease;
+}
+.album-cover.playing .album-image {
+    animation: spin 4s linear infinite;
+}
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+.play-button {
+    background: rgba(0, 0, 0, 0.5);
+    border: none;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+.play-button:hover {
+    background: rgba(0, 0, 0, 0.7);
+}
+.audio-player {
+    z-index: 1000;
+}
+audio {
+    width: 100%;
+    max-width: 100%;
+}
+/* Адаптивность */
+@media (max-width: 576px) {
+    .album-cover {
+        width: 80px;
+        height: 80px;
+    }
+    .album-image {
+        width: 80px;
+        height: 80px;
+    }
+    .play-button {
+        width: 30px;
+        height: 30px;
+    }
+    .play-button svg {
+        width: 20px;
+        height: 20px;
+    }
+    .track-info p {
+        font-size: 0.9rem;
+    }
+}

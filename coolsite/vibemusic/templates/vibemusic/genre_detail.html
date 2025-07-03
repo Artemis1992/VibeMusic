@@ -1,0 +1,18 @@
+<!-- genre_detail.html -->
+{% extends 'vibemusic/base.html' %}
+
+{% block title %}{{ genre.name }} - VibeMusic{% endblock %}
+
+{% block content %}
+    <h1>
+        {% if genre.icon %}
+            <img src="{{ genre.icon.url }}" alt="{{ genre.name }}" style="with: 30px;">
+            {% endif %}
+            {{ genre.name }}
+    </h1>
+    <p>{{ genre.description }}</p>
+    <h3>Исполнители</h3>
+    {% for artist in genre.artists.all %}
+        <p><a href="{% url 'artist_detail' artist.id %}">{{ artist.name }}</a></p>
+    {% endfor %}
+{% endblock %}
