@@ -7,9 +7,21 @@ from django.utils.text import slugify
 class UserProf(models.Model):
     pass
 
+class SiteSettings(models.Model):
+    header_image = models.ImageField(upload_to='site_settings/', blank=True, null=True, verbose_name="Изображение шапки")
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Настроки сайта"
+        verbose_name_plural = "Настроки сайта"
+    
+    def __str__(self):
+        return "Настроки сайта"
+
 # Модель для жанров музыки
 class Genre(models.Model):
     name = models.CharField(max_length=100, unique=True, verbose_name="Название жанра")
+    slug = models.SlugField(max_length=255, unique=True, db_index=True, blank=True, verbose_name="URL") # изменить после слаги в БД
     # Поле для выбора иконки из предопределённого списка.
     # Хранит имя файла иконки, по умолчанию (пустое значение-default.png).
     icon = models.ImageField(upload_to='genre_icons/', blank=True, null=True, verbose_name="Иконка жанра")
@@ -25,11 +37,22 @@ class Genre(models.Model):
     # Строковое представление объекта модели, возвращает название жанра.
     def __str__(self):
         return self.name
+    
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            base_slug = slugify(self.name, allow_unicode=True)
+            self.slug = base_slug
+            counter = 1
+            while Genre.objects.filter(slug=self.slug).exclude(id=self.id).exists():
+                self.slug = f"{base_slug}-{counter}"
+                counter += 1
+        super().save(*args, **kwargs)  # Вызываем save до проверки уникальности
 
 
 # Модели для исполнителя
 class Artist(models.Model):
     name = models.CharField(max_length=200, unique=True, verbose_name="Имя исполнителя")
+    slug = models.SlugField(max_length=255, unique=True, db_index=True, blank=True, verbose_name="URL") # изменить после слаги в БД
     bio = models.TextField(max_length=7000, blank=True, verbose_name="Биография")
     photo = models.ImageField(upload_to='artist_photos/', blank=True, null=True, verbose_name="Фото исполнителя") # Поле для фото исполнителя, сохраняется в media/artist_photos/, может быть пустым
     genres = models.ManyToManyField(Genre, related_name='artists', verbose_name="Жанры")                          # Связь "многие ко многим" с моделью Genre, позволяет присваивать исполнителю несколько жанров
@@ -38,6 +61,11 @@ class Artist(models.Model):
     class Meta:
         verbose_name = "Исполнитель"
         verbose_name_plural = "Исполнители"
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify(self.name)
+        super().save(*args, **kwargs)
 
     # Метод для строкового представления исполнителя (возвращает имя)
     def __str__(self):

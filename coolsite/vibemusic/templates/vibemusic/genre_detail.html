@@ -1,18 +1,62 @@
-<!-- genre_detail.html -->
 {% extends 'vibemusic/base.html' %}
-
+{% load static %}
+{% comment %} genre_detail.html {% endcomment %}
 {% block title %}{{ genre.name }} - VibeMusic{% endblock %}
 
 {% block content %}
+<div class="container mt-4">
     <h1>
         {% if genre.icon %}
-            <img src="{{ genre.icon.url }}" alt="{{ genre.name }}" style="with: 30px;">
-            {% endif %}
-            {{ genre.name }}
+            <img src="{{ genre.icon.url }}" alt="{{ genre.name }}" style="width: 30px; margin-right: 10px;">
+        {% endif %}
+        {{ genre.name }}
     </h1>
-    <p>{{ genre.description }}</p>
-    <h3>Исполнители</h3>
-    {% for artist in genre.artists.all %}
-        <p><a href="{% url 'artist_detail' artist.id %}">{{ artist.name }}</a></p>
-    {% endfor %}
+
+    {% if genre.description %}
+        <p>{{ genre.description }}</p>
+    {% endif %}
+
+    {% if not  genre.artists.all %}
+        <p>Нет исполнителей в этом жанре.</p>
+    {% endif %}
+
+    <h3>Посты</h3>
+    {% if posts %}
+        {% for post in posts %}
+            <div class="card mb-4 shadow-sm d-flex flex-row" style="min-height: 300px; border-radius: 10px; overflow: hidden;">
+                <!-- Фото (60%) -->
+                <div class="post-image" style="width: 60%; position: relative;">
+                    {% if post.images.first %}
+                        <img src="{{ post.images.first.image.url }}" alt="{{ post.images.first.caption|default:post.title }}" style="width: 100%; height: 100%; object-fit: cover;">
+                    {% else %}
+                        <img src="{% static 'vibemusic/images/placeholder.jpg' %}" alt="Placeholder" style="width: 100%; height: 100%; object-fit: cover;">
+                    {% endif %}
+                    <!-- Название исполнителя (левый верхний угол) -->
+                    <div class="position-absolute top-0 start-0 p-2" style="background: rgba(0, 0, 0, 0.7); border-radius: 0 0 5px 0;">
+                        <p class="mb-0 text-white">
+                            {% if post.artist %}
+                                <a href="{% url 'vibemusic:artist_detail' post.artist.slug %}" class="text-white text-decoration-none">{{ post.artist.name }}</a>
+                            {% else %}
+                                Неизвестный автор
+                            {% endif %}
+                        </p>
+                    </div>
+                    <!-- Кнопка "Читать дальше" (правый нижний угол) -->
+                    <div class="position-absolute bottom-0 end-0 p-2">
+                        <a href="{% url 'vibemusic:post_detail' post.slug %}" class="btn btn-primary btn-sm">Читать дальше</a>
+                    </div>
+                </div>
+                <!-- Описание (40%) -->
+                <div class="card-body bg-secondary text-white d-flex flex-column justify-content-between" style="width: 40%; padding: 15px;">
+                    <div>
+                        <h2 class="card-title h5 mb-2">{{ post.title }}</h2>
+                        <p class="mb-0">{{ post.content|safe|truncatechars:200 }}</p>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    {% else %}
+        <p>Нет постов в этом жанре.</p>
+    {% endif %}
+</div>
 {% endblock %}

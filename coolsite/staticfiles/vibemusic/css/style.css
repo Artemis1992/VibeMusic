@@ -11,8 +11,43 @@ body {
     color: #ffffff;
     font-family: Arial, sans-serif;
     line-height: 1.6;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
 }
 
+/* Поддержка динамического фона */
+body[data-background-image] {
+    background-image: var(--background-image);
+}
+
+/* Стили для постов на главной */
+.card {
+    border: none;
+    border-radius: 10px;
+    overflow: hidden;
+    width: 100%;
+    height: 400px; /* Фиксированная высота карточки */
+    max-width: 1200px; /* Ограничиваем ширину для единообразия */
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* Изображение в карточке поста */
+.post-image {
+    width: 60%; /* 60% ширины карточки */
+    height: 100%; /* Полная высота карточки (400px) */
+    position: relative;
+}
+
+.post-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* Уже есть в вашем CSS, сохраняем */
+}
+
+/* Остальные стили без изменений */
 header {
     background-color: #2c2c2c;
     padding: 20px;
@@ -57,18 +92,6 @@ footer {
     margin-bottom: 15px;
 }
 
-/* Стили для постов на главной */
-.card {
-    border: none;
-    border-radius: 10px;
-    overflow: hidden;
-}
-
-.post-image {
-    position: relative;
-    min-height: 300px;
-}
-
 /* Стили для сворачиваемой биографии */
 .collapse {
     margin-top: 10px;
@@ -94,5 +117,209 @@ footer {
 textarea.form-control {
     resize: vertical;
     min-height: 100px;
+}
+
+/* Шапка */
+.header-image {
+    height: 300px;
+    background-size: cover;
+    background-position: 50% 20%; /* Смещаем фокус вверх, чтобы лица были видны */
+    position: relative;
+}
+.overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+}
+.logo {
+    font-size: 2.5rem;
+    font-weight: bold;
+}
+
+/* Плеер */
+.music-player-container .track {
+    width: 100px;
+}
+.album-cover {
+    position: relative;
+    width: 100px;
+    height: 100px;
+    border-radius: 50%; /* Делаем контейнер круглым */
+    overflow: hidden; /* Обрезаем изображение по кругу */
+}
+.album-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+    border-radius: 50%; /* Делаем обложку круглой */
+}
+.album-cover.playing .album-image {
+    animation: spin 4s linear infinite;
+}
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+.play-button {
+    background: rgba(0, 0, 0, 0.5);
+    border: none;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+.play-button:hover {
+    background: rgba(0, 0, 0, 0.7);
+}
+.audio-player {
+    background-color: #343a40;
+    padding: 10px;
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    z-index: 1000;
+}
+
+.audio-player .play-pause-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+}
+
+.audio-player .form-range {
+    height: 5px;
+    background: #6c757d;
+    border-radius: 5px;
+}
+
+.audio-player .form-range::-webkit-slider-thumb {
+    background: #007bff;
+    cursor: pointer;
+}
+
+.audio-player .form-range::-moz-range-thumb {
+    background: #007bff;
+    cursor: pointer;
+}
+
+.audio-player .btn-link {
+    color: #fff;
+    text-decoration: none;
+}
+
+.audio-player .btn-link:hover {
+    color: #007bff;
+}
+.track-title {
+    font-size: 0.9rem; /* Размер шрифта */
+    color: #ffffff; /* Белый текст для темной темы */
+    white-space: nowrap; /* Предотвращает перенос текста */
+    overflow: hidden; /* Обрезает длинный текст */
+    text-overflow: ellipsis; /* Добавляет многоточие для длинных названий */
+    max-width: 100px; /* Ограничивает ширину текста */
+}
+
+/* Стили для кнопок */
+.btn-primary {
+    background-color: #ff5733; /* Оранжевый для кнопки "Биография", "Читать", "Отправить" */
+    border-color: #ff5733;
+    color: #ffffff;
+}
+.btn-primary:hover {
+    background-color: #cc4500; /* Темно-оранжевый при наведении */
+    border-color: #cc4500;
+}
+.btn-secondary {
+    background-color: #28a745; /* Зеленый для кнопки "Закрыть" */
+    border-color: #28a745;
+    color: #ffffff;
+}
+.btn-secondary:hover {
+    background-color: #218838; /* Темно-зеленый при наведении */
+    border-color: #218838;
+}
+.btn-close-white {
+    background-color: transparent;
+    filter: invert(1); /* Белый крестик */
+}
+.btn-close-white:hover {
+    filter: invert(0.7); /* Слегка затемнить при наведении */
+}
+
+/* Сохранение абзацев в модальном окне */
+.modal-body {
+    white-space: pre-wrap; /* Сохраняет пробелы и переносы строк */
+}
+
+/* Адаптивность для карточек постов */
+@media (max-width: 768px) {
+    .card {
+        flex-direction: column;
+        height: auto; /* Позволяем карточке растягиваться на мобильных */
+        max-width: 100%;
+    }
+    .post-image {
+        width: 100%;
+        height: 300px; /* Фиксированная высота изображения на мобильных */
+    }
+    .card-body {
+        width: 100%;
+    }
+}
+
+.header {
+    position: relative;
+    height: 400px;
+    background-size: cover;
+    color: white;
+}
+
+.header .container {
+    position: relative;
+    z-index: 1;
+}
+
+.navbar {
+    margin-bottom: 0;
+    background-color: rgba(39, 39, 39, 0.5); /* Полупрозрачный тёмный фон */
+    padding: 10px 0; /* Дополнительный отступ для удобства */
+}
+
+.navbar-dark .navbar-nav .nav-link {
+    color: white;
+    font-weight: bold;
+}
+
+.navbar-dark .navbar-nav .nav-link:hover {
+    color: #ddd;
+}
+
+.navbar-dark .navbar-brand {
+    color: white;
+    font-weight: bold;
+}
+
+.navbar-dark .navbar-brand:hover {
+    color: #ddd;
+}
+
+.navbar-dark .dropdown-menu {
+    background-color: rgba(0, 0, 0, 0.9);
+}
+
+.navbar-dark .dropdown-item {
+    color: white;
+}
+
+.navbar-dark .dropdown-item:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: white;
 }
 

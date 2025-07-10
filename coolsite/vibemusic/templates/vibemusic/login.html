@@ -1,15 +1,16 @@
-<!-- login.html -->
 {% extends 'vibemusic/base.html' %}
 {% load static %}
 
 {% block content %}
 <div class="container mt-4">
     <h1>Вход</h1>
+
     {% if form.errors %}
         <div class="alert alert-danger">
             Неверное имя пользователя или пароль.
         </div>
     {% endif %}
+
     <form method="post" action="{% url 'login' %}">
         {% csrf_token %}
         <div class="mb-3">
@@ -22,8 +23,12 @@
         </div>
         <button type="submit" class="btn btn-primary">Войти</button>
     </form>
+
     <p class="mt-3">
-        Нет аккаунта? <a href="{% url 'register' %}">Зарегистрируйтесь</a>.
+        Нет аккаунта?
+        <a href="{% url 'vibemusic:register' %}" class="btn btn-outline-light">Зарегистрируйтесь</a>
     </p>
 </div>
 {% endblock %}
+
+{% block header_title %}Вход{% endblock %}
