@@ -118,34 +118,27 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
+STATIC_URL = '/static/'
+STATICFILES_DIRS = [BASE_DIR / 'vibemusic/static']
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 
-STATIC_URL = 'static/'
+# Media files
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
-
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# Настройки пагинации
-COMMENTS_PER_PAGE = 5  # Количество комментариев на страницу
-POSTS_PER_PAGE = 5 # Посты на страницу
+# Pagination settings
+COMMENTS_PER_PAGE = 5  # Number of comments per page
+POSTS_PER_PAGE = 5     # Number of posts per page
 
-STATICFILES_DIRS = [BASE_DIR / 'vibemusic/static']
+# Authentication redirects
+LOGIN_REDIRECT_URL = 'vibemusic:home'  # Redirect after login
+LOGOUT_REDIRECT_URL = 'vibemusic:home'  # Redirect after logout
 
-STATIC_ROOT = BASE_DIR / 'staticfiles'  # Папка, куда будут собираться статические файлы
-
-MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR / 'media'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-
-STATIC_URL = '/static/'
-STATICFILES_DIRS = [BASE_DIR / 'static']
-
-LOGIN_REDIRECT_URL = 'vibemusic:home'  # Перенаправление после входа
-LOGOUT_REDIRECT_URL = 'vibemusic:home'  # Перенаправление после выхода
-
-
-# Логирование для отладки
+# Logging for debugging
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
@@ -155,9 +148,10 @@ LOGGING = {
         },
     },
     'loggers': {
-        'vibemusic': {
+        '': {
             'handlers': ['console'],
             'level': 'DEBUG',
+            'propagate': True,
         },
     },
 }

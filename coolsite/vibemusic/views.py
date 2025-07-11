@@ -1,3 +1,4 @@
+# views.py
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views.generic import ListView, DetailView, CreateView
 from django.contrib.auth.decorators import login_required
@@ -115,12 +116,19 @@ class LoginView(DataMixin, LoginView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         extra_context = self.get_context_menu(title='Авторизация')
-        extra_context['site_settings'] = SiteSettings.objects.first()
-        return {**context, **extra_context}
-    
+        site_settings = SiteSettings.objects.first()
+        if not site_settings:
+            logger.warning("SiteSettings object not found in database")
+            extra_context['site_settings'] = None
+        else:
+            logger.info(f"LoginView SiteSettings: {site_settings}, Header Image: {site_settings.header_image.url if site_settings.header_image else 'None'}, background_image: {context.get('background_image', 'None')}")
+            extra_context['site_settings'] = site_settings
+        context.update(extra_context)
+        logger.debug(f"LoginView Context: {context}")
+        return context
+
     def get(self, request, *args, **kwargs):
         context = self.get_context_data()
-        context['site_settings'] = SiteSettings.objects.first()
         return self.render_to_response(context)
     
     def get_success_url(self):
@@ -132,7 +140,6 @@ def logout_user(request):
 
 
     
-
 
 
 
