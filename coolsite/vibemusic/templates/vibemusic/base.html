@@ -1,3 +1,4 @@
+{% comment %} vibemusic/base.html {% endcomment %}
 
 {% load static %}
 <!DOCTYPE html>
@@ -14,17 +15,11 @@
     <header class="header" style="position: relative; height: 400px; z-index: 1;">
         {% if post %}
             <!-- Для страницы поста: фото исполнителя -->
-            {% if post.artist and post.artist.photo %}
-                <div style="background-image: url('{{ post.artist.photo.url }}'); height: 100%; width: 100%; position: absolute; top: 0; left: 0; background-size: cover; background-position: 50% 20%; filter: brightness(0.7);">
-                </div>
-            {% else %}
-                <div style="background-image: url('{% static 'vibemusic/images/placeholder.jpg' %}'); height: 100%; width: 100%; position: absolute; top: 0; left: 0; background-size: cover; background-position: 50% 20%; filter: brightness(0.7);">
-                </div>
-            {% endif %}
-            <!-- Остальная часть для постов -->
+            <div style="background-image: url('{% if post.artist and post.artist.photo %}{{ post.artist.photo.url }}{% else %}{% static 'vibemusic/images/placeholder.jpg' %}{% endif %}'); height: 100%; width: 100%; position: absolute; top: 0; left: 0; background-size: cover; background-position: 50% 20%; filter: brightness(0.7);">
+            </div>
             <div class="container h-100 d-flex flex-column justify-content-between">
-                <!-- Навигационное меню -->
-                <nav class="navbar navbar-expand-lg navbar-dark bg-transparent">
+                <!-- Навигационное меню с анимацией -->
+                <nav class="navbar navbar-expand-lg navbar-dark bg-transparent navbar-animated">
                     <div class="container">
                         <a class="navbar-brand" href="{% url 'vibemusic:home' %}">Vibe Music</a>
                         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
@@ -68,8 +63,8 @@
                         </div>
                     </div>
                 </nav>
-                <!-- Заголовок поста -->
-                <div class="text-white p-3" style="background: rgba(44, 44, 44, 0.7); border-radius: 5px;">
+                <!-- Заголовок поста с анимацией -->
+                <div class="header-title header-title-animated text-white p-3">
                     <h1>{{ post.title }}</h1>
                     <div class="d-flex align-items-center gap-3">
                         {% if post.artist %}
@@ -86,12 +81,11 @@
             </div>
         {% else %}
             <!-- Для главной страницы и других страниц (например, login) -->
-            <!-- Отображаем шапку которая по адресу /static/vibemusic/images/placeholder.jpg -->
             <div style="background-image: url('{{ site_settings.header_image.url|default:'/static/vibemusic/images/placeholder.jpg' }}'); height: 100%; width: 100%; position: absolute; top: 0; left: 0; background-size: cover; background-position: 50% 20%; filter: brightness(0.7); z-index: -1;">
             </div>
-            <div class="container h-100 d-flex flex-column justify-content-between" style="height: 400px; position: relative; z-index: 1;">
-                <!-- Навигационное меню -->
-                <nav class="navbar navbar-expand-lg navbar-dark bg-transparent">
+            <div class="container h-100">
+                <!-- Навигационное меню с анимацией -->
+                <nav class="navbar navbar-expand-lg navbar-dark bg-transparent navbar-animated">
                     <div class="container">
                         <a class="navbar-brand" href="{% url 'vibemusic:home' %}">Vibe Music</a>
                         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
@@ -138,10 +132,6 @@
                         </div>
                     </div>
                 </nav>
-                <!-- Заголовок для главной страницы -->
-                <div class="text-white p-3" style="background: rgba(173, 171, 171, 0.7); border-radius: 5px;">
-                    <h1>Vibe Music</h1>
-                </div>
             </div>
         {% endif %}
     </header>

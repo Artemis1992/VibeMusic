@@ -84,12 +84,12 @@ class PostDetailView(DataMixin, DetailView):
         context['site_settings'] = SiteSettings.objects.first()
         return {**context, **extra_context}
 
-class RegisterView(DataMixin, CreateView):
-    form_class = RegisterForm
-    template_name = 'vibemusic/register.html'
-    success_url = reverse_lazy('login')
-
-    def form_valid(self, form):
+class RegisterView(DataMixin, CreateView):                                              # DataMixin и Django CreateView для обработки регистрации пользователя
+    form_class = RegisterForm                                                           # Указываем пользовательскую форму RegisterForm для обработки данных регисрации
+    template_name = 'vibemusic/register.html'                                           # Задаем шаблон 'vibemusic/register.html' для страницы регистрации
+    success_url = reverse_lazy('login')                                                 # Обеспечиваем ленивую подгрузку URl адреса с перенапровленимем на страницу 'login'
+    
+    def form_valid(self, form):                                                         # Регестрируем пульзователя и показываем сообщение об успехе.
         logger.info(f"User registered: {form.cleaned_data['username']}")
         response = super().form_valid(form)
         messages.success(self.request, 'Регистрация успешна! Пожалуйста, войдите.')
@@ -109,35 +109,34 @@ class RegisterView(DataMixin, CreateView):
 
 
 
-class LoginView(DataMixin, LoginView):
-    form_class = LoginViewForm
-    template_name = 'vibemusic/login.html'
+class LoginView(DataMixin, LoginView):                                                  # DataMixin и Django LoginView для обработки входа пользователя
+    form_class = LoginViewForm                                                          # Указывает пользовательскую форму LoginViewForm для обработки данных входа
+    template_name = 'vibemusic/login.html'                                              # Задает шаблон vibemusic/login.html для страницы входа
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        extra_context = self.get_context_menu(title='Авторизация')
-        site_settings = SiteSettings.objects.first()
-        if not site_settings:
-            logger.warning("SiteSettings object not found in database")
-            extra_context['site_settings'] = None
-        else:
-            logger.info(f"LoginView SiteSettings: {site_settings}, Header Image: {site_settings.header_image.url if site_settings.header_image else 'None'}, background_image: {context.get('background_image', 'None')}")
-            extra_context['site_settings'] = site_settings
-        context.update(extra_context)
-        logger.debug(f"LoginView Context: {context}")
-        return context
+    def get_context_data(self, **kwargs):                                               # Переопределяет метод для настройки контекста, передаваемого в шаблон
+        context = super().get_context_data(**kwargs)                                    # Получает стандартный контекст из родительского класса LoginView
+        extra_context = self.get_context_menu(title='Авторизация')                      # Вызывает метод get_context_menu с заголовком "Авторизация" для добавления контекста
+        site_settings = SiteSettings.objects.first()                                    # Получает первый объект SiteSettings из базы данных
+        if not site_settings:                                                           # Проверяет, существует ли объект SiteSettings
+            logger.warning("SiteSettings object not found in database")                 # Логирует предупреждение, если объект SiteSettings не найден
+            extra_context['site_settings'] = None                                       # Устанавливает site_settings в None в дополнительном контексте
+        else:                                                                           # Выполняется, если объект SiteSettings найден
+            logger.info(f"LoginView SiteSettings: {site_settings}, Header Image: {site_settings.header_image.url if site_settings.header_image else 'None'}, background_image: {context.get('background_image', 'None')}") # Логирует информацию о SiteSettings, включая URL изображения заголовка и фоновое изображение
+            extra_context['site_settings'] = site_settings                              # Добавляет объект SiteSettings в дополнительный контекст
+        context.update(extra_context)                                                   # Обновляет основной контекст данными из extra_context
+        logger.debug(f"LoginView Context: {context}")                                   # Логирует отладочную информацию о полном контексте
+        return context                                                                  # Возвращает обновленный контекст для шаблона
 
-    def get(self, request, *args, **kwargs):
-        context = self.get_context_data()
-        return self.render_to_response(context)
+    def get(self, request, *args, **kwargs):                                            # Обрабатывает GET-запрос для отображения страницы входа
+        context = self.get_context_data()                                               # Получает контекст, вызывая метод get_context_data
+        return self.render_to_response(context)                                         # Рендерит шаблон с полученным контекстом
     
-    def get_success_url(self):
-        return reverse_lazy('vibemusic:home')
+    def get_success_url(self):                                                          # Определяет URL для перенаправления после успешного входа
+        return reverse_lazy('vibemusic:home')                                           # Возвращает URL для имени 'vibemusic:home' с отложенной загрузкой
     
-def logout_user(request):
-    logout(request)
-    return redirect('login')
-
+def logout_user(request):                                                               # Определяет функцию для выхода пользователя из системы
+    logout(request)                                                                     # Выполняет выход пользователя, используя функцию Django logout
+    return redirect('login')                                                            # Перенаправляет на страницу входа с именем 'login'
 
     
 

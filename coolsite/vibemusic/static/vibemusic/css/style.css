@@ -1,12 +1,11 @@
-/* style.css */
-/* Сброс стандартных стилей */
+/* === Сброс стандартных стилей === */
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
 }
 
-/* Тёмная тема */
+/* === Тёмная тема === */
 body {
     background-color: #1a1a1a;
     color: #ffffff;
@@ -18,12 +17,19 @@ body {
     background-attachment: fixed;
 }
 
-/* Поддержка динамического фона */
+/* === Поддержка динамического фона === */
 body[data-background-image] {
     background-image: var(--background-image);
 }
 
-/* Стили для постов на главной */
+/* === Центрирование формы === */
+.form-container {
+    max-width: 400px; /* Ограничиваем ширину формы */
+    margin: 0 auto; /* Центрируем форму по горизонтали */
+    padding: 20px; /* Добавляем внутренние отступы для красоты */
+}
+
+/* === Стили для постов на главной === */
 .card {
     border: none;
     border-radius: 10px;
@@ -35,7 +41,7 @@ body[data-background-image] {
     margin-right: auto;
 }
 
-/* Изображение в карточке поста */
+/* === Изображение в карточке поста === */
 .post-image {
     width: 60%; /* 60% ширины карточки */
     height: 100%; /* Полная высота карточки (400px) */
@@ -48,7 +54,7 @@ body[data-background-image] {
     object-fit: cover; /* Уже есть в вашем CSS, сохраняем */
 }
 
-/* Остальные стили без изменений */
+/* === Остальные стили без изменений === */
 header {
     background-color: #2c2c2c;
     padding: 20px;
@@ -72,13 +78,16 @@ footer {
     width: 100%;
 }
 
+/* === Стили для полей ввода === */
 .form-control {
+    max-width: 400px; /* Ограничиваем ширину полей ввода */
     margin-bottom: 10px;
     background-color: #2c2c2c;
     color: #ffffff;
     border: 1px solid #444;
 }
 
+/* === Уведомления об успехе и ошибке === */
 .alert-success {
     background-color: #d4edda;
     color: #155724;
@@ -93,7 +102,7 @@ footer {
     margin-bottom: 15px;
 }
 
-/* Стили для сворачиваемой биографии */
+/* === Стили для сворачиваемой биографии === */
 .collapse {
     margin-top: 10px;
 }
@@ -102,7 +111,7 @@ footer {
     background-color: transparent;
 }
 
-/* Стили для пагинатора */
+/* === Стили для пагинатора === */
 .pagination .page-link {
     background-color: #2c2c2c;
     color: #ffffff;
@@ -114,19 +123,20 @@ footer {
     border-color: #007bff;
 }
 
-/* Стили для формы комментариев */
+/* === Стили для формы комментариев === */
 textarea.form-control {
     resize: vertical;
     min-height: 100px;
 }
 
-/* Шапка */
+/* === Шапка === */
 .header-image {
     height: 300px;
     background-size: cover;
     background-position: 50% 20%; /* Смещаем фокус вверх, чтобы лица были видны */
     position: relative;
 }
+
 .overlay {
     position: absolute;
     top: 0;
@@ -135,15 +145,17 @@ textarea.form-control {
     height: 100%;
     background: rgba(0, 0, 0, 0.5);
 }
+
 .logo {
     font-size: 2.5rem;
     font-weight: bold;
 }
 
-/* Плеер */
+/* === Плеер === */
 .music-player-container .track {
     width: 100px;
 }
+
 .album-cover {
     position: relative;
     width: 100px;
@@ -151,6 +163,7 @@ textarea.form-control {
     border-radius: 50%; /* Делаем контейнер круглым */
     overflow: hidden; /* Обрезаем изображение по кругу */
 }
+
 .album-image {
     width: 100%;
     height: 100%;
@@ -158,13 +171,16 @@ textarea.form-control {
     transition: transform 0.3s ease;
     border-radius: 50%; /* Делаем обложку круглой */
 }
+
 .album-cover.playing .album-image {
     animation: spin 4s linear infinite;
 }
+
 @keyframes spin {
     from { transform: rotate(0deg); }
     to { transform: rotate(360deg); }
 }
+
 .play-button {
     background: rgba(0, 0, 0, 0.5);
     border: none;
@@ -176,9 +192,11 @@ textarea.form-control {
     justify-content: center;
     cursor: pointer;
 }
+
 .play-button:hover {
     background: rgba(0, 0, 0, 0.7);
 }
+
 .audio-player {
     background-color: #343a40;
     padding: 10px;
@@ -218,6 +236,7 @@ textarea.form-control {
 .audio-player .btn-link:hover {
     color: #007bff;
 }
+
 .track-title {
     font-size: 0.9rem; /* Размер шрифта */
     color: #ffffff; /* Белый текст для темной темы */
@@ -227,39 +246,44 @@ textarea.form-control {
     max-width: 100px; /* Ограничивает ширину текста */
 }
 
-/* Стили для кнопок */
+/* === Стили для кнопок === */
 .btn-primary {
     background-color: #ff5733; /* Оранжевый для кнопки "Биография", "Читать", "Отправить" */
     border-color: #ff5733;
     color: #ffffff;
 }
+
 .btn-primary:hover {
     background-color: #cc4500; /* Темно-оранжевый при наведении */
     border-color: #cc4500;
 }
+
 .btn-secondary {
     background-color: #28a745; /* Зеленый для кнопки "Закрыть" */
     border-color: #28a745;
     color: #ffffff;
 }
+
 .btn-secondary:hover {
     background-color: #218838; /* Темно-зеленый при наведении */
     border-color: #218838;
 }
+
 .btn-close-white {
     background-color: transparent;
     filter: invert(1); /* Белый крестик */
 }
+
 .btn-close-white:hover {
     filter: invert(0.7); /* Слегка затемнить при наведении */
 }
 
-/* Сохранение абзацев в модальном окне */
+/* === Сохранение абзацев в модальном окне === */
 .modal-body {
     white-space: pre-wrap; /* Сохраняет пробелы и переносы строк */
 }
 
-/* Адаптивность для карточек постов */
+/* === Адаптивность для карточек постов === */
 @media (max-width: 768px) {
     .card {
         flex-direction: column;
@@ -275,6 +299,7 @@ textarea.form-control {
     }
 }
 
+/* === Стили для шапки === */
 .header {
     position: relative;
     height: 400px;
@@ -287,6 +312,7 @@ textarea.form-control {
     z-index: 1;
 }
 
+/* === Навигационное меню === */
 .navbar {
     margin-bottom: 0;
     background-color: rgba(39, 39, 39, 0.5); /* Полупрозрачный тёмный фон */
@@ -324,3 +350,55 @@ textarea.form-control {
     color: white;
 }
 
+/* === Анимация навигационного меню === */
+.navbar-animated {
+    animation: slideDown 0.8s ease-out forwards;
+}
+
+@keyframes slideDown {
+    0% {
+        transform: translateY(-100%);
+        opacity: 0;
+    }
+    100% {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+/* === Стили для заголовка === */
+.header-title {
+    background: rgba(0, 0, 0, 0.6); /* Полупрозрачный тёмный фон */
+    backdrop-filter: blur(5px); /* Эффект размытия фона */
+    border-radius: 10px; /* Плавные углы */
+    padding: 1.5rem; /* Увеличенные отступы */
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3); /* Мягкая тень */
+    transition: transform 0.3s ease, box-shadow 0.3s ease; /* Плавная анимация при наведении */
+}
+
+.header-title:hover {
+    transform: translateY(-5px); /* Лёгкий подъём при наведении */
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4); /* Усиленная тень */
+}
+
+.header-title h1 {
+    font-size: 2.5rem; /* Размер заголовка */
+    font-weight: 700; /* Жирный шрифт */
+    margin: 0; /* Убрать отступы */
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5); /* Тень текста для читаемости */
+}
+
+.header-title-animated {
+    animation: slideUp 1s ease-out forwards;
+}
+
+@keyframes slideUp {
+    0% {
+        transform: translateY(100px);
+        opacity: 0;
+    }
+    100% {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
