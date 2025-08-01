@@ -1,5 +1,4 @@
 {% comment %} vibemusic/base.html {% endcomment %}
-
 {% load static %}
 <!DOCTYPE html>
 <html lang="ru">
@@ -15,11 +14,11 @@
     <header class="header" style="position: relative; height: 400px; z-index: 1;">
         {% if post %}
             <!-- Для страницы поста: фото исполнителя -->
-            <div style="background-image: url('{% if post.artist and post.artist.photo %}{{ post.artist.photo.url }}{% else %}{% static 'vibemusic/images/placeholder.jpg' %}{% endif %}'); height: 100%; width: 100%; position: absolute; top: 0; left: 0; background-size: cover; background-position: 50% 20%; filter: brightness(0.7);">
+            <div style="background-image: url('{% if post.artist and post.artist.photo %}{{ post.artist.photo.url }}{% else %}{% static 'vibemusic/images/placeholder.jpg' %}{% endif %}'); height: 100%; width: 100%; position: absolute; top: 0; left: 0; background-size: cover; background-position: 50% 10%; filter: brightness(0.9);">
             </div>
             <div class="container h-100 d-flex flex-column justify-content-between">
                 <!-- Навигационное меню с анимацией -->
-                <nav class="navbar navbar-expand-lg navbar-dark bg-transparent navbar-animated">
+                <nav class="navbar navbar-expand-lg navbar-dark bg-transparent navbar-animated sticky-top">
                     <div class="container">
                         <a class="navbar-brand" href="{% url 'vibemusic:home' %}">Vibe Music</a>
                         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
@@ -80,12 +79,11 @@
                 </div>
             </div>
         {% else %}
-            <!-- Для главной страницы и других страниц (например, login) -->
+            <!-- Для главной страницы и других страниц -->
             <div style="background-image: url('{{ site_settings.header_image.url|default:'/static/vibemusic/images/placeholder.jpg' }}'); height: 100%; width: 100%; position: absolute; top: 0; left: 0; background-size: cover; background-position: 50% 20%; filter: brightness(0.7); z-index: -1;">
             </div>
             <div class="container h-100">
-                <!-- Навигационное меню с анимацией -->
-                <nav class="navbar navbar-expand-lg navbar-dark bg-transparent navbar-animated">
+                <nav class="navbar navbar-expand-lg navbar-dark bg-transparent navbar-animated sticky-top">
                     <div class="container">
                         <a class="navbar-brand" href="{% url 'vibemusic:home' %}">Vibe Music</a>
                         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
@@ -115,9 +113,6 @@
                                         {% endfor %}
                                     </ul>
                                 </li>
-                                <li class="nav-item">
-                                    <a class="nav-link" href="{% url 'vibemusic:about' %}">О сайте</a>
-                                </li>
                             </ul>
                             <ul class="navbar-nav">
                                 {% if user.is_authenticated %}
@@ -136,7 +131,7 @@
         {% endif %}
     </header>
 
-    <div class="container mt-4">
+    <div class="container mt-4" style="margin-top: 56px;">
         {% block content %}
         {% endblock %}
     </div>

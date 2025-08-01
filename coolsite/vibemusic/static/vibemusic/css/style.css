@@ -1,179 +1,298 @@
-/* === Сброс стандартных стилей === */
+/* ==========================================================================
+   СЕКЦИЯ 1: СБРОС СТАНДАРТНЫХ СТИЛЕЙ
+   ========================================================================== */
+/* Сброс всех стандартных отступов, полей и настройка модели блока */
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
 }
 
-/* === Тёмная тема === */
+/* ==========================================================================
+   СЕКЦИЯ 2: ОСНОВНЫЕ СТИЛИ ТЕМЫ И ТЕЛА ДОКУМЕНТА
+   ========================================================================== */
+/* Общие стили для тела документа с тёмной темой */
 body {
-    background-color: #1a1a1a;
-    color: #ffffff;
-    font-family: Arial, sans-serif;
-    line-height: 1.6;
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-    background-attachment: fixed;
+    background-color: #1a1a1a; /* Тёмный фон для всей страницы */
+    color: #ffffff; /* Основной цвет текста */
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; /* Четкий шрифт */
+    line-height: 1.6; /* Высота строк для читаемости */
+    background-size: cover; /* Фон занимает весь экран */
+    background-position: center; /* Центрирование фона */
+    background-repeat: no-repeat; /* Убираем повторение фона */
+    background-attachment: fixed; /* Фиксируем фон при прокрутке */
 }
 
-/* === Поддержка динамического фона === */
+/* Поддержка динамического фона через атрибут data-background-image */
 body[data-background-image] {
-    background-image: var(--background-image);
+    background-image: var(--background-image); /* Используем CSS-переменную */
 }
 
-/* === Центрирование формы === */
+/* ==========================================================================
+   СЕКЦИЯ 3: СТИЛИ ДЛЯ ФОРМ И КОНТЕЙНЕРОВ
+   ========================================================================== */
+/* Контейнер для форм с центрированием */
 .form-container {
-    max-width: 400px; /* Ограничиваем ширину формы */
-    margin: 0 auto; /* Центрируем форму по горизонтали */
-    padding: 20px; /* Добавляем внутренние отступы для красоты */
+    max-width: 400px; /* Ограничение ширины */
+    margin: 0 auto; /* Центрирование по горизонтали */
+    padding: 20px; /* Внутренние отступы */
 }
 
-/* === Стили для постов на главной === */
+/* Стили для полей ввода */
+.form-control {
+    max-width: 400px; /* Ограничение ширины поля */
+    margin-bottom: 10px; /* Отступ снизу */
+    background-color: #2c2c2c; /* Тёмный фон поля */
+    color: #ffffff; /* Белый текст */
+    border: 1px solid #444; /* Граница */
+}
+
+/* Текстовая область в формах */
+textarea.form-control {
+    resize: vertical; /* Разрешить изменение только по высоте */
+    min-height: 100px; /* Минимальная высота */
+}
+
+/* ==========================================================================
+   СЕКЦИЯ 4: СТИЛИ ДЛЯ КАРТОЧЕК И ПОСТОВ
+   ========================================================================== */
+/* Общие стили для карточек постов */
 .card {
-    border: none;
-    border-radius: 10px;
-    overflow: hidden;
-    width: 100%;
-    height: 400px; /* Фиксированная высота карточки */
-    max-width: 1200px; /* Ограничиваем ширину для единообразия */
-    margin-left: auto;
-    margin-right: auto;
+    border: none; /* Убираем стандартную границу */
+    border-radius: 10px; /* Скругление углов */
+    overflow: hidden; /* Скрываем переполнение */
+    width: 100%; /* Полная ширина */
+    height: 400px; /* Фиксированная высота */
+    max-width: 1200px; /* Максимальная ширина */
+    margin-left: auto; /* Центрирование */
+    margin-right: auto; /* Центрирование */
 }
 
-/* === Изображение в карточке поста === */
+/* Секция изображения в карточке */
 .post-image {
-    width: 60%; /* 60% ширины карточки */
-    height: 100%; /* Полная высота карточки (400px) */
-    position: relative;
+    width: 60%; /* Занимает 60% карточки */
+    height: 100%; /* Полная высота карточки */
+    position: relative; /* Для позиционирования дочерних элементов */
 }
 
 .post-image img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover; /* Уже есть в вашем CSS, сохраняем */
+    width: 100%; /* Полная ширина контейнера */
+    height: 100%; /* Полная высота контейнера */
+    object-fit: cover; /* Изображение заполняет контейнер */
 }
 
-/* === Остальные стили без изменений === */
-header {
-    background-color: #2c2c2c;
-    padding: 20px;
-    text-align: center;
-}
-
-h1 {
-    font-size: 2.5rem;
-}
-
-main {
-    max-width: 800px;
-    margin: 20px auto;
-    padding: 0 20px;
-}
-
-footer {
-    background-color: #2c2c2c;
-    text-align: center;
-    padding: 10px;
-    width: 100%;
-}
-
-/* === Стили для полей ввода === */
-.form-control {
-    max-width: 400px; /* Ограничиваем ширину полей ввода */
-    margin-bottom: 10px;
-    background-color: #2c2c2c;
-    color: #ffffff;
-    border: 1px solid #444;
-}
-
-/* === Уведомления об успехе и ошибке === */
-.alert-success {
-    background-color: #d4edda;
-    color: #155724;
-    padding: 10px;
-    margin-bottom: 15px;
-}
-
-.alert-danger {
-    background-color: #f8d7da;
-    color: #721c24;
-    padding: 10px;
-    margin-bottom: 15px;
-}
-
-/* === Стили для сворачиваемой биографии === */
-.collapse {
-    margin-top: 10px;
-}
-
+/* Тело карточки */
 .card-body {
-    background-color: transparent;
+    background-color: transparent; /* Прозрачный фон */
+    width: 40%; /* Занимает 40% карточки */
+    padding: 15px; /* Внутренние отступы */
 }
 
-/* === Стили для пагинатора === */
+/* Адаптивность карточек для мобильных устройств */
+@media (max-width: 768px) {
+    .card {
+        flex-direction: column; /* Стековые элементы */
+        height: auto; /* Адаптивная высота */
+        max-width: 100%; /* Полная ширина */
+    }
+    .post-image {
+        width: 100%; /* Полная ширина */
+        height: 300px; /* Фиксированная высота на мобильных */
+    }
+    .card-body {
+        width: 100%; /* Полная ширина */
+    }
+}
+
+/* ==========================================================================
+   СЕКЦИЯ 5: СТИЛИ ШАПКИ И НАВИГАЦИОННОГО МЕНЮ
+   ========================================================================== */
+/* Общие стили для шапки */
+.header {
+    position: relative; /* Для позиционирования фона и контента */
+    width: 100%; /* Полная ширина */
+    height: 400px; /* Базовая высота */
+    margin: 0 auto; /* Центрирование */
+    overflow: hidden; /* Скрываем переполнение */
+    z-index: 1; /* Над контентом страницы */
+    background-color: rgba(52, 58, 64, 0.8); /* Полупрозрачный фон, как у плеера */
+}
+
+.header > div {
+    position: absolute; /* Абсолютное позиционирование */
+    top: 0; /* Сверху */
+    left: 0; /* Слева */
+    width: 100%; /* Полная ширина */
+    height: 100%; /* Полная высота */
+    background-size: cover; /* Изображение заполняет контейнер */
+    background-position: center; /* Центрирование изображения */
+    background-repeat: no-repeat; /* Убираем повторение */
+    filter: brightness(0.75); /* Лёгкое затемнение для контраста */
+    z-index: -1; /* Под контентом */
+}
+
+/* Фон для страницы поста */
+.header[style*="post.artist"] > div {
+    background-image: url('{% if post.artist and post.artist.photo %}{{ post.artist.photo.url }}{% else %}{% static "vibemusic/images/placeholder.jpg" %}{% endif %}');
+}
+
+/* Фон для главной страницы */
+.header[style*="site_settings.header_image"] > div {
+    background-image: url('{{ site_settings.header_image.url|default:"/static/vibemusic/images/placeholder.jpg" }}');
+}
+
+.header .container {
+    position: relative; /* Для позиционирования над фоном */
+    z-index: 1; /* Над фоновым изображением */
+}
+
+/* Адаптивность шапки */
+@media (max-width: 768px) {
+    .header {
+        height: 200px; /* Уменьшение высоты на мобильных */
+    }
+    .header > div {
+        background-size: cover; /* Сохранение пропорций */
+    }
+}
+
+/* Стили навигационного меню */
+.navbar {
+    margin-bottom: 0; /* Убираем нижний отступ */
+    padding: 10px 0; /* Вертикальные и горизонтальные отступы */
+    background-color: rgba(52, 58, 64, 0.8); /* Полупрозрачный фон, как у плеера */
+    z-index: 100; /* Над шапкой */
+}
+
+.navbar-dark .navbar-nav .nav-link {
+    color: #ffffff; /* Чисто белый текст */
+    font-weight: 700; /* Жирный шрифт для четкости */
+    font-size: 1.1rem; /* Увеличенный размер шрифта */
+    opacity: 1; /* Полная непрозрачность */
+    text-decoration: none; /* Убираем подчёркивание */
+}
+
+.navbar-dark .navbar-nav .nav-link:hover {
+    color: #ff5e00; /* Яркий оранжевый при наведении */
+}
+
+.navbar-dark .navbar-brand {
+    color: #ff5100; /* Яркий оранжевый цвет бренда */
+    font-weight: bold; /* Жирный шрифт */
+    font-size: 1.5rem; /* Увеличенный размер бренда */
+}
+
+.navbar-dark .navbar-brand:hover {
+    color: #ffffff; /* Белый при наведении */
+}
+
+.navbar-dark .dropdown-menu {
+    background-color: rgba(52, 58, 64, 0.9); /* Полупрозрачный фон для меню */
+    border: none; /* Убираем границу */
+    min-width: 200px; /* Минимальная ширина */
+    /* Убираем фиксированное display для корректной работы JS */
+}
+
+.navbar-dark .dropdown-item {
+    color: #ffffff; /* Белый текст */
+    font-weight: 500; /* Средняя жирность */
+    padding: 10px 20px; /* Увеличенные отступы */
+    opacity: 1; /* Полная видимость */
+}
+
+.navbar-dark .dropdown-item:hover {
+    background-color: #444444; /* Лёгкий серый фон */
+    color: #ff5e00; /* Яркий оранжевый */
+}
+
+/* Стили для заголовка в шапке */
+.header-title {
+    background-color: rgba(44, 44, 44, 0.7); /* Чёткий тёмный фон */
+    border-radius: 10px; /* Скругление углов */
+    padding: 1.5rem; /* Внутренние отступы */
+    transition: transform 0.3s ease; /* Плавный подъем */
+}
+
+.header-title:hover {
+    transform: translateY(-5px); /* Подъем при наведении */
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); /* Лёгкая тень */
+}
+
+.header-title h1 {
+    font-size: 2.5rem; /* Размер шрифта */
+    font-weight: 700; /* Жирность */
+    margin: 0; /* Убираем отступы */
+}
+
+.header-title-animated {
+    animation: slideUp 1s ease-out forwards; /* Анимация появления */
+}
+
+@keyframes slideUp {
+    0% { transform: translateY(100px); opacity: 0; }
+    100% { transform: translateY(0); opacity: 1; }
+}
+
+/* ==========================================================================
+   СЕКЦИЯ 6: СТИЛИ ДЛЯ УВЕДОМЛЕНИЙ
+   ========================================================================== */
+/* Уведомление об успехе */
+.alert-success {
+    background-color: #d4edda; /* Зелёный фон */
+    color: #155724; /* Тёмно-зелёный текст */
+    padding: 10px; /* Внутренние отступы */
+    margin-bottom: 15px; /* Отступ снизу */
+}
+
+/* Уведомление об ошибке */
+.alert-danger {
+    background-color: #f8d7da; /* Красный фон */
+    color: #721c24; /* Тёмно-красный текст */
+    padding: 10px; /* Внутренние отступы */
+    margin-bottom: 15px; /* Отступ снизу */
+}
+
+/* ==========================================================================
+   СЕКЦИЯ 7: СТИЛИ ДЛЯ ПАГИНАЦИИ
+   ========================================================================== */
 .pagination .page-link {
-    background-color: #2c2c2c;
-    color: #ffffff;
-    border: 1px solid #444;
+    background-color: #2c2c2c; /* Тёмный фон */
+    color: #ffffff; /* Белый текст */
+    border: 1px solid #444; /* Граница */
 }
 
 .pagination .page-item.active .page-link {
-    background-color: #007bff;
-    border-color: #007bff;
+    background-color: #007bff; /* Синий фон для активной страницы */
+    border-color: #007bff; /* Синяя граница */
 }
 
-/* === Стили для формы комментариев === */
-textarea.form-control {
-    resize: vertical;
-    min-height: 100px;
-}
-
-/* === Шапка === */
-.header-image {
-    height: 300px;
-    background-size: cover;
-    background-position: 50% 20%; /* Смещаем фокус вверх, чтобы лица были видны */
-    position: relative;
-}
-
-.overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.5);
-}
-
-.logo {
-    font-size: 2.5rem;
-    font-weight: bold;
-}
-
-/* === Плеер === */
+/* ==========================================================================
+   СЕКЦИЯ 8: СТИЛИ ДЛЯ ПЛЕЕРА И МУЗЫКИ
+   ========================================================================== */
+/* Контейнер плеера */
 .music-player-container .track {
-    width: 100px;
+    width: 100px; /* Ширина трека */
 }
 
+/* Обложка альбома */
 .album-cover {
-    position: relative;
-    width: 100px;
-    height: 100px;
-    border-radius: 50%; /* Делаем контейнер круглым */
-    overflow: hidden; /* Обрезаем изображение по кругу */
+    position: relative; /* Для позиционирования */
+    width: 100px; /* Ширина */
+    height: 100px; /* Высота */
+    border-radius: 50%; /* Круглая форма */
+    overflow: hidden; /* Скрываем переполнение */
 }
 
 .album-image {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    transition: transform 0.3s ease;
-    border-radius: 50%; /* Делаем обложку круглой */
+    width: 100%; /* Полная ширина */
+    height: 100%; /* Полная высота */
+    object-fit: cover; /* Заполнение */
+    transition: transform 0.3s ease; /* Плавное вращение */
+    border-radius: 50%; /* Круглая форма */
 }
 
 .album-cover.playing .album-image {
-    animation: spin 4s linear infinite;
+    animation: spin 4s linear infinite; /* Вращение при воспроизведении */
 }
 
 @keyframes spin {
@@ -181,224 +300,157 @@ textarea.form-control {
     to { transform: rotate(360deg); }
 }
 
+/* Кнопка воспроизведения */
 .play-button {
-    background: rgba(0, 0, 0, 0.5);
-    border: none;
-    border-radius: 50%;
-    width: 40px;
-    height: 40px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
+    background: rgba(0, 0, 0, 0.5); /* Полупрозрачный фон */
+    border: none; /* Убираем границу */
+    border-radius: 50%; /* Круглая форма */
+    width: 40px; /* Ширина */
+    height: 40px; /* Высота */
+    display: flex; /* Гибкое выравнивание */
+    align-items: center; /* Центрирование по вертикали */
+    justify-content: center; /* Центрирование по горизонтали */
+    cursor: pointer; /* Курсор указывает на кликабельность */
 }
 
 .play-button:hover {
-    background: rgba(0, 0, 0, 0.7);
+    background: rgba(0, 0, 0, 0.7); /* Усиление фона при наведении */
 }
 
+/* Основной плеер */
 .audio-player {
-    background-color: #343a40;
-    padding: 10px;
-    position: fixed;
-    bottom: 0;
-    width: 100%;
-    z-index: 1000;
+    background-color: #343a40; /* Тёмный фон */
+    padding: 10px; /* Внутренние отступы */
+    position: fixed; /* Фиксированное положение */
+    bottom: 0; /* Снизу */
+    width: 100%; /* Полная ширина */
+    z-index: 1000; /* Выше всего контента */
 }
 
 .audio-player .play-pause-btn {
-    background: none;
-    border: none;
-    cursor: pointer;
+    background: none; /* Прозрачный фон */
+    border: none; /* Убираем границу */
+    cursor: pointer; /* Курсор для клика */
 }
 
 .audio-player .form-range {
-    height: 5px;
-    background: #6c757d;
-    border-radius: 5px;
+    height: 5px; /* Высота ползунка */
+    background: #6c757d; /* Серый фон */
+    border-radius: 5px; /* Скругление */
 }
 
 .audio-player .form-range::-webkit-slider-thumb {
-    background: #007bff;
-    cursor: pointer;
+    background: #007bff; /* Синий ползунок */
+    cursor: pointer; /* Курсор */
 }
 
 .audio-player .form-range::-moz-range-thumb {
-    background: #007bff;
-    cursor: pointer;
+    background: #007bff; /* Синий ползунок для Firefox */
+    cursor: pointer; /* Курсор */
 }
 
 .audio-player .btn-link {
-    color: #fff;
-    text-decoration: none;
+    color: #fff; /* Белый цвет ссылки */
+    text-decoration: none; /* Убираем подчёркивание */
 }
 
 .audio-player .btn-link:hover {
-    color: #007bff;
+    color: #007bff; /* Синий при наведении */
+}
+
+/* Прогресс-бар */
+#progress {
+    width: 100%; /* Полная ширина */
+    height: 5px; /* Высота */
+    background: transparent; /* Прозрачный фон */
+    border-radius: 5px; /* Скругление */
+    outline: none; /* Убираем обводку */
+    appearance: none; /* Современный стандарт */
+    -webkit-appearance: none; /* Совместимость */
+    position: relative; /* Для позиционирования */
+}
+
+#progress::-webkit-slider-runnable-track {
+    background: transparent; /* Прозрачный фон */
+}
+
+#progress::-moz-range-track {
+    background: transparent; /* Прозрачный фон */
+}
+
+#progress::-webkit-slider-thumb {
+    -webkit-appearance: none; /* Убираем стандартный вид */
+    width: 12px; /* Ширина ползунка */
+    height: 12px; /* Высота ползунка */
+    background: #1DB954; /* Зелёный цвет */
+    border-radius: 50%; /* Круглая форма */
+    cursor: pointer; /* Курсор */
+}
+
+#progress::-moz-range-thumb {
+    width: 12px; /* Ширина ползунка */
+    height: 12px; /* Высота ползунка */
+    background: #1DB954; /* Зелёный цвет */
+    border-radius: 50%; /* Круглая форма */
+    cursor: pointer; /* Курсор */
 }
 
 .track-title {
     font-size: 0.9rem; /* Размер шрифта */
-    color: #ffffff; /* Белый текст для темной темы */
-    white-space: nowrap; /* Предотвращает перенос текста */
-    overflow: hidden; /* Обрезает длинный текст */
-    text-overflow: ellipsis; /* Добавляет многоточие для длинных названий */
-    max-width: 100px; /* Ограничивает ширину текста */
+    color: #ffffff; /* Белый текст */
+    white-space: nowrap; /* Не переносим текст */
+    overflow: hidden; /* Скрываем переполнение */
+    text-overflow: ellipsis; /* Многоточие при обрезке */
+    max-width: 100px; /* Ограничение ширины */
 }
 
-/* === Стили для кнопок === */
+/* ==========================================================================
+   СЕКЦИЯ 9: СТИЛИ ДЛЯ КНОПОК
+   ========================================================================== */
+/* Основная кнопка */
 .btn-primary {
-    background-color: #ff5733; /* Оранжевый для кнопки "Биография", "Читать", "Отправить" */
-    border-color: #ff5733;
-    color: #ffffff;
+    background-color: #ff5733; /* Оранжевый фон */
+    border-color: #ff5733; /* Оранжевая граница */
+    color: #ffffff; /* Белый текст */
 }
 
 .btn-primary:hover {
-    background-color: #cc4500; /* Темно-оранжевый при наведении */
-    border-color: #cc4500;
+    background-color: #cc4500; /* Углублённый оранжевый */
+    border-color: #cc4500; /* Углублённая граница */
 }
 
+/* Вторичная кнопка */
 .btn-secondary {
-    background-color: #28a745; /* Зеленый для кнопки "Закрыть" */
-    border-color: #28a745;
-    color: #ffffff;
+    background-color: #28a745; /* Зелёный фон */
+    border-color: #28a745; /* Зелёная граница */
+    color: #ffffff; /* Белый текст */
 }
 
 .btn-secondary:hover {
-    background-color: #218838; /* Темно-зеленый при наведении */
-    border-color: #218838;
+    background-color: #218838; /* Углублённый зелёный */
+    border-color: #218838; /* Углублённая граница */
 }
 
+/* Кнопка закрытия белого цвета */
 .btn-close-white {
-    background-color: transparent;
-    filter: invert(1); /* Белый крестик */
+    background-color: transparent; /* Прозрачный фон */
+    filter: invert(1); /* Инверсия цвета для белого */
 }
 
 .btn-close-white:hover {
-    filter: invert(0.7); /* Слегка затемнить при наведении */
+    filter: invert(0.7); /* Лёгкое затемнение при наведении */
 }
 
-/* === Сохранение абзацев в модальном окне === */
+/* ==========================================================================
+   СЕКЦИЯ 10: СТИЛИ ДЛЯ МОДАЛЬНЫХ ОКОН
+   ========================================================================== */
 .modal-body {
-    white-space: pre-wrap; /* Сохраняет пробелы и переносы строк */
+    white-space: pre-wrap; /* Сохранение переносов строк */
 }
 
-/* === Адаптивность для карточек постов === */
-@media (max-width: 768px) {
-    .card {
-        flex-direction: column;
-        height: auto; /* Позволяем карточке растягиваться на мобильных */
-        max-width: 100%;
-    }
-    .post-image {
-        width: 100%;
-        height: 300px; /* Фиксированная высота изображения на мобильных */
-    }
-    .card-body {
-        width: 100%;
-    }
-}
-
-/* === Стили для шапки === */
-.header {
-    position: relative;
-    height: 400px;
-    background-size: cover;
-    color: white;
-}
-
-.header .container {
-    position: relative;
-    z-index: 1;
-}
-
-/* === Навигационное меню === */
-.navbar {
-    margin-bottom: 0;
-    background-color: rgba(39, 39, 39, 0.5); /* Полупрозрачный тёмный фон */
-    padding: 10px 0; /* Дополнительный отступ для удобства */
-}
-
-.navbar-dark .navbar-nav .nav-link {
-    color: white;
-    font-weight: bold;
-}
-
-.navbar-dark .navbar-nav .nav-link:hover {
-    color: #ddd;
-}
-
-.navbar-dark .navbar-brand {
-    color: white;
-    font-weight: bold;
-}
-
-.navbar-dark .navbar-brand:hover {
-    color: #ddd;
-}
-
-.navbar-dark .dropdown-menu {
-    background-color: rgba(0, 0, 0, 0.9);
-}
-
-.navbar-dark .dropdown-item {
-    color: white;
-}
-
-.navbar-dark .dropdown-item:hover {
-    background-color: rgba(255, 255, 255, 0.1);
-    color: white;
-}
-
-/* === Анимация навигационного меню === */
-.navbar-animated {
-    animation: slideDown 0.8s ease-out forwards;
-}
-
-@keyframes slideDown {
-    0% {
-        transform: translateY(-100%);
-        opacity: 0;
-    }
-    100% {
-        transform: translateY(0);
-        opacity: 1;
-    }
-}
-
-/* === Стили для заголовка === */
-.header-title {
-    background: rgba(0, 0, 0, 0.6); /* Полупрозрачный тёмный фон */
-    backdrop-filter: blur(5px); /* Эффект размытия фона */
-    border-radius: 10px; /* Плавные углы */
-    padding: 1.5rem; /* Увеличенные отступы */
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3); /* Мягкая тень */
-    transition: transform 0.3s ease, box-shadow 0.3s ease; /* Плавная анимация при наведении */
-}
-
-.header-title:hover {
-    transform: translateY(-5px); /* Лёгкий подъём при наведении */
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4); /* Усиленная тень */
-}
-
-.header-title h1 {
-    font-size: 2.5rem; /* Размер заголовка */
-    font-weight: 700; /* Жирный шрифт */
-    margin: 0; /* Убрать отступы */
-    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5); /* Тень текста для читаемости */
-}
-
-.header-title-animated {
-    animation: slideUp 1s ease-out forwards;
-}
-
-@keyframes slideUp {
-    0% {
-        transform: translateY(100px);
-        opacity: 0;
-    }
-    100% {
-        transform: translateY(0);
-        opacity: 1;
-    }
+/* ==========================================================================
+   СЕКЦИЯ 11: СТИЛИ ДЛЯ КОЛЛАПСА (СВОРАЧИВАЕМОГО КОНТЕНТА)
+   ========================================================================== */
+.collapse {
+    margin-top: 10px; /* Отступ сверху */
 }

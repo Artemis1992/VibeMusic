@@ -15,7 +15,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-class PostListView(ListView):
+class PostListView(ListView, DataMixin):
     model = Post
     template_name = 'vibemusic/index.html'
     context_object_name = 'page_obj'
@@ -90,15 +90,15 @@ class RegisterView(DataMixin, CreateView):                                      
     success_url = reverse_lazy('login')                                                 # Обеспечиваем ленивую подгрузку URl адреса с перенапровленимем на страницу 'login'
     
     def form_valid(self, form):                                                         # Регестрируем пульзователя и показываем сообщение об успехе.
-        logger.info(f"User registered: {form.cleaned_data['username']}")
-        response = super().form_valid(form)
-        messages.success(self.request, 'Регистрация успешна! Пожалуйста, войдите.')
+        logger.info(f"User registered: {form.cleaned_data['username']}")                # Извлекаем имя пользователя из формы и записываем в лог-файл с уровнем INFO
+        response = super().form_valid(form)                                             # Вызываем form_valid() у родителя CrateView, он вызывает form_save() и перенапровляет на success_url. Результат HttpResponseRedirect сохраняем в переменную
+        messages.success(self.request, 'Регистрация успешна! Пожалуйста, войдите.')     # Добавляем всплывающее сообщение для пользователей сообщение уровня успех(зеленое)
         return response
     
-    def form_invalid(self, form):
-        logger.error(f"Registration failed: {form.errors}")
-        messages.error(self.request, 'Ошибка регистрации. Проверьте данные')
-        return super().form_invalid(form)
+    def form_invalid(self, form):                                                       # При неправильной регестрации показываем сообщение об ошибке
+        logger.error(f"Registration failed: {form.errors}")                             # Записываем ошибку в лог-файл в случае если пользователь совершил ошибку.
+        messages.error(self.request, 'Ошибка регистрации. Проверьте данные')            # Добавили всплывающее сообщение для пользователей сообщение уровня ошибка(красное)
+        return super().form_invalid(form)                                               # from_invalid() рендерим ту же страницу с формой и ее ошибками(передаем в шаблон чтобы пользователь мог увидеть и исправить)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -223,26 +223,23 @@ class PostCreateView(DataMixin, LoginRequiredMixin, CreateView):
         return {**context, **extra_context}
 
 def about(request):
-    context = {
-        'menu': menu,
-        'genres': Genre.objects.all(),
-        'site_settings': SiteSettings.objects.first(),  # Настройки сайта
-    }
+    mixin = DataMixin()
+    context = mixin.get_context_menu(title="О сайте")
+    context["site_settings"] = SiteSettings.objects.first()
+
     return render(request, 'vibemusic/about.html', context)
 
 def contact(request):
-    context = {
-        'menu': menu,
-        'genres': Genre.objects.all(),
-        'site_settings': SiteSettings.objects.first(),  # Настройки сайта
-    }
+    mixin = DataMixin()
+    context = mixin.get_context_menu(title="Обратная связь")
+    context['site_settings'] = SiteSettings.objects.first()
+
     return render(request, 'vibemusic/contact.html', context)
 
 @login_required
 def profile(request):
-    context = {
-        'menu': menu,
-        'genres': Genre.objects.all(),
-        'site_settings': SiteSettings.objects.first(),  # Настройки сайта
-    }
+    mixin = DataMixin()
+    context = mixin.get_context_menu(title="Профиль")
+    context['site_settings'] = SiteSettings.objects.first()
+
     return render(request, 'vibemusic/profile.html', context)

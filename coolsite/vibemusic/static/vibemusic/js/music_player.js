@@ -58,6 +58,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     playIcon.style.display = 'none';
                     pauseIcon.style.display = 'block';
                     currentTrack = audioSrc;
+                    progress.style.backgroundImage = `linear-gradient(to right, #1DB954 0%, #6c757d 0%)`; // Сброс при новом треке
                 }).catch(err => console.error('Play error:', err));
             } else {
                 if (audio.paused) {
@@ -115,12 +116,13 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Обновление прогресса
+    // Обновление прогресса с закрашиванием
     audio.addEventListener('timeupdate', () => {
         if (!isSeeking && audio.duration && !isNaN(audio.duration)) {
             const percent = (audio.currentTime / audio.duration) * 100;
             progress.value = percent;
-            console.log('Time update:', audio.currentTime.toFixed(2), 'of', audio.duration.toFixed(2), 'Progress:', percent.toFixed(2));
+            progress.style.backgroundImage = `linear-gradient(to right, #1DB954 ${percent}%, #6c757d ${percent}%)`;
+            console.log('Time update - Progress:', percent.toFixed(2), 'Background:', progress.style.backgroundImage);
         }
     });
 
@@ -132,9 +134,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     progress.addEventListener('input', () => {
         if (isSeeking && audio.readyState > 0 && audio.duration && !isNaN(audio.duration)) {
-            const seekTime = (progress.value / 100) * audio.duration;
+            const percent = progress.value;
+            const seekTime = (percent / 100) * audio.duration;
             audio.currentTime = seekTime;
-            console.log('Seeking to:', seekTime.toFixed(2));
+            progress.style.backgroundImage = `linear-gradient(to right, #1DB954 ${percent}%, #6c757d ${percent}%)`;
+            console.log('Seeking to:', seekTime.toFixed(2), 'Progress:', percent);
         }
     });
 
@@ -186,12 +190,14 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         currentTrack = null;
         progress.value = 0;
+        progress.style.backgroundImage = `linear-gradient(to right, #1DB954 0%, #6c757d 0%)`;
     });
 
     // Логирование метаданных
     audio.addEventListener('loadedmetadata', () => {
         console.log('Metadata loaded:', audio.duration, 'ReadyState:', audio.readyState);
         progress.disabled = false;
+        progress.style.backgroundImage = `linear-gradient(to right, #1DB954 0%, #6c757d 0%)`; // Сброс при загрузке
     });
 
     audio.addEventListener('canplay', () => {
