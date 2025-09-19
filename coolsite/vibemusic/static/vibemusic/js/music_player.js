@@ -1,3 +1,4 @@
+// music_player.js
 document.addEventListener('DOMContentLoaded', () => {
     // Установка фонового изображения
     const backgroundImage = document.body.dataset.backgroundImage;

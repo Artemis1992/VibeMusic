@@ -4,8 +4,16 @@
 {% block content %}
 <div class="container-fluid p-0">
     <div class="container mt-4">
-        <div class="mb-4">
-            <h5>Компазиции {{ post.title }}</h5>
+        <div class="mb-4 d-flex align-items-center">
+            <h5>Композиции {{ post.title }}</h5>
+            {% if user.is_authenticated %}
+                <button class="btn btn-link p-0 ms-3 like-post-btn" data-post-id="{{ post.id }}" data-liked="{% if user in post.liked_by.all %}true{% else %}false{% endif %}">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="{% if user in post.liked_by.all %}#ff5733{% else %}#ffffff{% endif %}" class="bi bi-heart-fill heart-icon" viewBox="0 0 16 16">
+                        <path fill-rule="evenodd" d="M8 1.314C12.438-3.248 23.534 4.735 8 15-7.534 4.736 3.562-3.248 8 1.314z"/>
+                    </svg>
+                    <span class="like-count">{{ post.liked_by.count }}</span>
+                </button>
+            {% endif %}
         </div>
 
         <!-- Плеер без длинных блоков -->
@@ -14,8 +22,8 @@
                 {% for track in post.tracks.all %}
                     <div class="track text-center">
                         <div class="album-cover position-relative" data-src="{{ track.audio_file.url }}">
-                            <img src="{% if track.album_image %}{{ track.album_image.url }}{% else %}{% static 'vibemusic/images/placeholder.jpg' %}{% endif %}" 
-                                class="album-image" style="width: 100px; height: 100px; object-fit: cover; cursor: pointer;">
+                            <img src="{% if track.album_image %}{{ track.album_image.url }}{% else %}{{ MEDIA_URL }}{{ settings.DEFAULT_ALBUM_IMAGE }}{% endif %}" 
+                                 class="album-image" style="width: 100px; height: 100px; object-fit: cover; cursor: pointer;">
                             <button class="play-button position-absolute top-50 start-50 translate-middle">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="white" class="bi bi-play-fill play-icon" viewBox="0 0 16 16">
                                     <path d="M11.596 8.697l-6.363 3.692c-.54.313-1.233-.066-1.233-.697V4.308c0-.63.692-1.01 1.233-.696l6.363 3.692a.802.802 0 0 1 0 1.393z"/>
@@ -26,6 +34,12 @@
                             </button>
                         </div>
                         <p class="track-title mt-2 mb-0">{{ track.title }}</p>
+                        <button class="btn btn-link p-0 mt-1 like-track-btn" data-track-id="{{ track.id }}" data-liked="{% if user.is_authenticated and user in track.liked_by.all %}true{% else %}false{% endif %}">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="{% if user.is_authenticated and user in track.liked_by.all %}#ff5733{% else %}#ffffff{% endif %}" class="bi bi-heart-fill heart-icon" viewBox="0 0 16 16">
+                                <path fill-rule="evenodd" d="M8 1.314C12.438-3.248 23.534 4.735 8 15-7.534 4.736 3.562-3.248 8 1.314z"/>
+                            </svg>
+                            <span class="like-count">{{ track.liked_by.count }}</span>
+                        </button>
                     </div>
                 {% endfor %}
             </div>
@@ -59,34 +73,73 @@
         <!-- Комментарии и форма -->
         <h3 class="mt-5 mb-3">Комментарии</h3>
         {% for comment in page_obj %}
-            <div class="mb-3 border-bottom pb-2">
-                <p><strong>{{ comment.user.username }}</strong>: {{ comment.content }} <small class="text-muted">({{ comment.created_at|date:"d.m.Y H:i" }})</small></p>
-                {% for reply in comment.replies.all %}
-                    <p class="ms-3">↳ <strong>{{ reply.user.username }}</strong>: {{ reply.content }}</p>
-                {% endfor %}
+            <div class="mb-3 border-bottom pb-2 d-flex align-items-start" style="background: rgba(44, 44, 44, 0.3); border-radius: 5px; padding: 10px;">
+                <img src="{% if comment.user.profile.photo %}{{ comment.user.profile.photo.url }}{% else %}{{ MEDIA_URL }}images/default-avatar.png{% endif %}" 
+                     alt="{{ comment.user.username }}" 
+                     style="width: 40px; height: 40px; border-radius: 50%; margin-right: 10px;">
+                <div class="flex-grow-1">
+                    <p class="mb-1">
+                        <strong>{{ comment.user.username }}</strong>: {{ comment.content|linebreaks }} 
+                        <small class="text-muted">({{ comment.created_at|date:"d.m.Y H:i" }})</small>
+                    </p>
+                    {% if comment.image %}
+                        <img src="{{ comment.image.url }}" alt="Comment image" style="max-width: 110px; margin-top: 5px;">
+                    {% endif %}
+                    {% for reply in comment.replies.all %}
+                        <div class="ms-3 mt-2 d-flex align-items-start">
+                            <img src="{% if reply.user.profile.photo %}{{ reply.user.profile.photo.url }}{% else %}{{ MEDIA_URL }}images/default-avatar.png{% endif %}" 
+                                 alt="{{ reply.user.username }}" 
+                                 style="width: 30px; height: 30px; border-radius: 50%; margin-right: 10px;">
+                            <p class="mb-1">
+                                ↳ <strong>{{ reply.user.username }}</strong>: {{ reply.content|linebreaks }}
+                                <small class="text-muted">({{ reply.created_at|date:"d.m.Y H:i" }})</small>
+                            </p>
+                        </div>
+                    {% endfor %}
+                </div>
+                <button class="btn btn-link p-0 ms-2 like-comment-btn" data-comment-id="{{ comment.id }}" data-liked="{% if user.is_authenticated and user in comment.liked_by.all %}true{% else %}false{% endif %}">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="{% if user.is_authenticated and user in comment.liked_by.all %}#ff5733{% else %}#ffffff{% endif %}" class="bi bi-heart-fill heart-icon" viewBox="0 0 16 16">
+                        <path fill-rule="evenodd" d="M8 1.314C12.438-3.248 23.534 4.735 8 15-7.534 4.736 3.562-3.248 8 1.314z"/>
+                    </svg>
+                    <span class="like-count">{{ comment.liked_by.count }}</span>
+                </button>
             </div>
         {% empty %}
             <p class="text-muted">Нет комментариев.</p>
         {% endfor %}
 
         {% if page_obj.has_other_pages %}
-            <nav class="mt-4"><ul class="pagination">
-                {% if page_obj.has_previous %}
-                    <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">Назад</a></li>
-                {% endif %}
-                <li class="page-item active"><span class="page-link">Страница {{ page_obj.number }} из {{ page_obj.paginator.num_pages }}</span></li>
-                {% if page_obj.has_next %}
-                    <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">Вперёд</a></li>
-                {% endif %}
-            </ul></nav>
+            <nav class="mt-4">
+                <ul class="pagination">
+                    {% if page_obj.has_previous %}
+                        <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">Назад</a></li>
+                    {% endif %}
+                    <li class="page-item active"><span class="page-link">Страница {{ page_obj.number }} из {{ page_obj.paginator.num_pages }}</span></li>
+                    {% if page_obj.has_next %}
+                        <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">Вперёд</a></li>
+                    {% endif %}
+                </ul>
+            </nav>
         {% endif %}
 
         {% if user.is_authenticated %}
-            <form method="post" action="{% if user.is_authenticated %}{% endif %}">
-            <form method="post" action="{% url 'vibemusic:add_comment' post.slug %}" class="mt-4">
+            <form method="post" action="{% url 'vibemusic:add_comment' post.slug %}" class="mt-4" enctype="multipart/form-data">
                 {% csrf_token %}
-                {{ form.as_p }}
-                <button type="submit" class="btn btn-primary">Отправить</button>
+                <div class="input-group mb-3">
+                    <textarea name="content" id="comment-content" class="form-control" rows="5" 
+                             placeholder="Напишите ваш комментарий... (поддерживаются смайлики)" 
+                             style="resize: vertical;"></textarea>
+                    <button type="button" class="btn btn-outline-secondary" id="emoji-btn">😊</button>
+                </div>
+                <div class="input-group mb-3">
+                    <input type="file" name="image" id="comment-image" class="form-control" accept="image/*">
+                    <button type="submit" class="btn btn-primary">Отправить</button>
+                </div>
+                <div class="emoji-picker" id="emoji-picker" style="display: none; max-height: 150px; overflow-y: auto; background: #2c2c2c; border: 1px solid #444; padding: 10px; border-radius: 5px;">
+                    {% for emoji in "😊👍👎😍😢😂😎😁😜😇😈🔥💪🌟🎉" %}
+                        <span class="emoji" style="cursor: pointer; font-size: 1.5rem; margin: 5px;" onclick="insertEmoji(this.innerText)">{{ emoji }}</span>
+                    {% endfor %}
+                </div>
             </form>
         {% else %}
             <p class="text-muted mt-3"><a href="{% url 'login' %}" class="text-white">Войдите</a>, чтобы оставить комментарий.</p>
@@ -127,5 +180,23 @@
     </div>
 </div>
 
+{% comment %} 
+Динамический подход: Передача серверных данных (URL и CSRF-токен) в JavaScript.
+- `toggleLikeUrl`: Содержит URL для endpoint'а лайков, генерируемый Django через `{% url 'vibemusic:toggle_like' %}`.
+- `csrfToken`: CSRF-токен для безопасных POST-запросов, необходим для защиты от CSRF-атак.
+Эти переменные используются в `control_of_likes.js` для отправки AJAX-запросов.
+{% endcomment %}
+<script>
+    var toggleLikeUrl = "{% url 'vibemusic:toggle_like' %}"; 
+    var csrfToken = "{{ csrf_token }}";
+</script>
+<script src="{% static 'vibemusic/js/control_of_likes.js' %}"></script>
+
+{% comment %} 
+Статический подход: Подключение JS-файла без серверных данных.
+- `music_player.js`: Содержит логику для работы музыкального плеера (воспроизведение, пауза, перемотка и т.д.).
+- Не требует динамических данных от Django, поэтому подключается напрямую через `{% static ... %}`. 
+{% endcomment %}
 <script src="{% static 'vibemusic/js/music_player.js' %}"></script>
+
 {% endblock %}

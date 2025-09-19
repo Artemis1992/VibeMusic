@@ -1,4 +1,5 @@
-{% comment %} vibemusic/base.html {% endcomment %}
+<!--base.html-->
+
 {% load static %}
 <!DOCTYPE html>
 <html lang="ru">
@@ -10,60 +11,46 @@
     <link rel="stylesheet" href="{% static 'vibemusic/css/style.css' %}">
 </head>
 <body {% if background_image %}data-background-image="{{ background_image }}"{% endif %}>
+    <!-- Выносим nav вне header для правильного fixed-top (исправление сдвига меню) -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-transparent fixed-top">
+        <div class="container">
+            <a class="navbar-brand" href="{% url 'vibemusic:home' %}">Vibe Music</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    {% for item in menu %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'vibemusic:'|add:item.url_name %}">{{ item.title }}</a>
+                        </li>
+                    {% endfor %}
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="genresDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">Жанры</a>
+                        <ul class="dropdown-menu" aria-labelledby="genresDropdown">
+                            {% for genre in genres %}
+                                <li><a class="dropdown-item" href="{% url 'vibemusic:genre_detail' genre.slug %}">
+                                    {% if genre.icon %}<img src="{{ genre.icon.url }}" alt="{{ genre.name }}" style="width: 20px; height: 20px; margin-right: 5px;">{% endif %}
+                                    {{ genre.name }}
+                                </a></li>
+                            {% endfor %}
+                        </ul>
+                    </li>
+                </ul>
+                {% include 'vibemusic/_profile_menu.html' %}
+            </div>
+        </div>
+    </nav>
+
     <!-- Шапка с изображением и меню -->
-    <header class="header" style="position: relative; height: 400px; z-index: 1;">
+    <header class="header" style="position: relative; height: 400px; z-index: 1; margin-top: 0;"> <!-- Убрал margin-top: 60px для подъема шапки -->
         {% if post %}
             <!-- Для страницы поста: фото исполнителя -->
-            <div style="background-image: url('{% if post.artist and post.artist.photo %}{{ post.artist.photo.url }}{% else %}{% static 'vibemusic/images/placeholder.jpg' %}{% endif %}'); height: 100%; width: 100%; position: absolute; top: 0; left: 0; background-size: cover; background-position: 50% 10%; filter: brightness(0.9);">
+            <div style="background-image: url('{% if post.artist and post.artist.photo %}{{ post.artist.photo.url }}{% else %}{% static 'vibemusic/images/placeholder.jpg' %}{% endif %}'); height: 100%; width: 100%; position: absolute; top: 0; left: 0; background-size: cover; background-position: 50% 10%; filter: brightness(0.9); z-index: -1;">
             </div>
-            <div class="container h-100 d-flex flex-column justify-content-between">
-                <!-- Навигационное меню с анимацией -->
-                <nav class="navbar navbar-expand-lg navbar-dark bg-transparent navbar-animated sticky-top">
-                    <div class="container">
-                        <a class="navbar-brand" href="{% url 'vibemusic:home' %}">Vibe Music</a>
-                        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                            <span class="navbar-toggler-icon"></span>
-                        </button>
-                        <div class="collapse navbar-collapse" id="navbarNav">
-                            <ul class="navbar-nav me-auto">
-                                {% for item in menu %}
-                                    <li class="nav-item">
-                                        <a class="nav-link" href="{% url 'vibemusic:'|add:item.url_name %}">{{ item.title }}</a>
-                                    </li>
-                                {% endfor %}
-                                <li class="nav-item dropdown">
-                                    <a class="nav-link dropdown-toggle" href="#" id="genresDropdown" role="button" data-bs-toggle="dropdown">
-                                        Жанры
-                                    </a>
-                                    <ul class="dropdown-menu">
-                                        {% for genre in genres %}
-                                            <li>
-                                                <a class="dropdown-item" href="{% url 'vibemusic:genre_detail' genre.slug %}">
-                                                    {% if genre.icon %}
-                                                        <img src="{{ genre.icon.url }}" alt="{{ genre.name }}" style="width: 20px; height: 20px; margin-right: 5px;">
-                                                    {% endif %}
-                                                    {{ genre.name }}
-                                                </a>
-                                            </li>
-                                        {% endfor %}
-                                    </ul>
-                                </li>
-                            </ul>
-                            <ul class="navbar-nav">
-                                {% if user.is_authenticated %}
-                                    <li class="nav-item"><a class="nav-link" href="{% url 'vibemusic:add_post' %}">Добавить пост</a></li>
-                                    <li class="nav-item"><a class="nav-link" href="{% url 'vibemusic:profile' %}">Профиль ({{ user.username }})</a></li>
-                                    <li class="nav-item"><a class="nav-link" href="{% url 'logout' %}">Выход</a></li>
-                                {% else %}
-                                    <li class="nav-item"><a class="nav-link" href="{% url 'login' %}">Вход</a></li>
-                                    <li class="nav-item"><a class="nav-link" href="{% url 'vibemusic:register' %}">Регистрация</a></li>
-                                {% endif %}
-                            </ul>
-                        </div>
-                    </div>
-                </nav>
-                <!-- Заголовок поста с анимацией -->
-                <div class="header-title header-title-animated text-white p-3">
+            <div class="container h-100 d-flex flex-column justify-content-end"> <!-- Изменил на justify-content-end, чтобы опустить header-title вниз -->
+                <!-- Заголовок поста -->
+                <div class="header-title header-title-animated text-white p-3 header-title-bottom"> <!-- Добавил класс для явного позиционирования вниз -->
                     <h1>{{ post.title }}</h1>
                     <div class="d-flex align-items-center gap-3">
                         {% if post.artist %}
@@ -79,59 +66,24 @@
                 </div>
             </div>
         {% else %}
-            <!-- Для главной страницы и других страниц -->
+            <!-- Для главной и других страниц -->
             <div style="background-image: url('{{ site_settings.header_image.url|default:'/static/vibemusic/images/placeholder.jpg' }}'); height: 100%; width: 100%; position: absolute; top: 0; left: 0; background-size: cover; background-position: 50% 20%; filter: brightness(0.7); z-index: -1;">
             </div>
             <div class="container h-100">
-                <nav class="navbar navbar-expand-lg navbar-dark bg-transparent navbar-animated sticky-top">
-                    <div class="container">
-                        <a class="navbar-brand" href="{% url 'vibemusic:home' %}">Vibe Music</a>
-                        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                            <span class="navbar-toggler-icon"></span>
-                        </button>
-                        <div class="collapse navbar-collapse" id="navbarNav">
-                            <ul class="navbar-nav me-auto">
-                                {% for item in menu %}
-                                    <li class="nav-item">
-                                        <a class="nav-link" href="{% url 'vibemusic:'|add:item.url_name %}">{{ item.title }}</a>
-                                    </li>
-                                {% endfor %}
-                                <li class="nav-item dropdown">
-                                    <a class="nav-link dropdown-toggle" href="#" id="genresDropdown" role="button" data-bs-toggle="dropdown">
-                                        Жанры
-                                    </a>
-                                    <ul class="dropdown-menu">
-                                        {% for genre in genres %}
-                                            <li>
-                                                <a class="dropdown-item" href="{% url 'vibemusic:genre_detail' genre.slug %}">
-                                                    {% if genre.icon %}
-                                                        <img src="{{ genre.icon.url }}" alt="{{ genre.name }}" style="width: 20px; height: 20px; margin-right: 5px;">
-                                                    {% endif %}
-                                                    {{ genre.name }}
-                                                </a>
-                                            </li>
-                                        {% endfor %}
-                                    </ul>
-                                </li>
-                            </ul>
-                            <ul class="navbar-nav">
-                                {% if user.is_authenticated %}
-                                    <li class="nav-item"><a class="nav-link" href="{% url 'vibemusic:add_post' %}">Добавить пост</a></li>
-                                    <li class="nav-item"><a class="nav-link" href="{% url 'vibemusic:profile' %}">Профиль ({{ user.username }})</a></li>
-                                    <li class="nav-item"><a class="nav-link" href="{% url 'logout' %}">Выход</a></li>
-                                {% else %}
-                                    <li class="nav-item"><a class="nav-link" href="{% url 'login' %}">Вход</a></li>
-                                    <li class="nav-item"><a class="nav-link" href="{% url 'vibemusic:register' %}">Регистрация</a></li>
-                                {% endif %}
-                            </ul>
-                        </div>
-                    </div>
-                </nav>
             </div>
         {% endif %}
     </header>
 
-    <div class="container mt-4" style="margin-top: 56px;">
+    <!-- Основной контент -->
+    <div class="container mt-4" style="margin-top: 420px;">
+        {% if messages %}
+            <div class="alert alert-dismissible fade show" role="alert">
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+                {% endfor %}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endif %}
         {% block content %}
         {% endblock %}
     </div>

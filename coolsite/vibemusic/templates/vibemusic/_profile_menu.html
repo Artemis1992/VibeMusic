@@ -1,0 +1,62 @@
+<!-- vibemusic/templates/vibemusic/_profile_menu.html -->
+{% load static crispy_forms_tags %}
+<ul class="navbar-nav">
+    {% if user.is_authenticated %}                                             <!-- Проверяем, авторизован ли пользователь -->
+        <li class="nav-item"><a class="nav-link" href="{% url 'vibemusic:add_post' %}">Добавить пост</a></li>  <!-- Ссылка для создания поста -->
+        <li class="nav-item profile-dropdown">                                 <!-- Элемент для всплывающего меню профиля -->
+            <a class="nav-link" href="#" id="profileDropdown">                 <!-- Ссылка с аватаркой -->
+                <img src="{% if user.profile.photo %}{{ user.profile.photo.url }}{% else %}{% static 'vibemusic/images/placeholder.jpg' %}{% endif %}" 
+                     alt="Аватар" class="rounded-circle" style="width:40px; height:40px; object-fit:cover;">
+            </a>
+            <div class="profile-menu">                                         <!-- Контейнер всплывающего меню -->
+                <div class="p-3">                                              <!-- Внутренний контейнер с отступами -->
+                    <h5>{{ user.username }}</h5>                               <!-- Имя пользователя -->
+                    <hr>                                                       <!-- Разделитель -->
+                    <h6>Настройки профиля</h6>                                 <!-- Заголовок формы -->
+                    <form method="post" enctype="multipart/form-data" action="{% url 'vibemusic:update_profile' %}">  <!-- Форма редактирования профиля -->
+                        {% csrf_token %}                                       <!-- Токен CSRF для безопасности -->
+                        {{ form|crispy }}                                      <!-- Форма с использованием crispy-forms -->
+                        {% if form.errors %}                                   <!-- Проверяем наличие ошибок формы -->
+                            <div class="alert alert-danger mt-2">              <!-- Контейнер для ошибок -->
+                                {{ form.errors }}                              <!-- Вывод ошибок формы -->
+                            </div>
+                        {% endif %}
+                        <button type="submit" class="btn btn-primary btn-sm mt-2">Сохранить</button>  <!-- Кнопка отправки формы -->
+                    </form>
+                    {% if not user.profile.telegram_chat_id %}              <!-- Проверяем, привязан ли Telegram -->
+                        <a href="https://t.me/{{ TELEGRAM_BOT_USERNAME }}?start={{ telegram_token }}" 
+                           target="_blank" class="btn btn-primary btn-sm mt-2">Привязать Telegram</a>  <!-- Ссылка для привязки Telegram -->
+                    {% else %}
+                        <p class="text-success">Telegram: {{ user.profile.telegram_username }}</p>  <!-- Отображаем имя Telegram -->
+                    {% endif %}
+                    <hr>                                                       <!-- Разделитель -->
+                    <h6>Ваши посты</h6>                                       <!-- Заголовок списка постов -->
+                    <ul class="list-unstyled">                                 <!-- Список постов пользователя -->
+                        {% for post in user_posts %}                           <!-- Перебираем посты -->
+                            <li><a href="{% url 'vibemusic:post_detail' post.slug %}">{{ post.title }}</a></li>  <!-- Ссылка на пост -->
+                        {% empty %}
+                            <li>Нет постов</li>                                <!-- Сообщение, если постов нет -->
+                        {% endfor %}
+                    </ul>
+                    {% if following %}                                         <!-- Проверяем, есть ли подписки у пользователя -->
+                        <h6>Подписки</h6>                                     <!-- Заголовок блока с подписками -->
+                        <ul class="list-unstyled following-list">             <!-- Ненумерованный список для вывода подписок -->
+                            {% for follow in following %}                     <!-- Перебираем все объекты из переменной following -->
+                                <li>{{ follow.user.username }}</li>           <!-- Выводим имя пользователя, на которого подписан -->
+                            {% endfor %}                                      <!-- Конец цикла -->
+                        </ul>
+                    {% else %}                                                <!-- Если подписок нет -->
+                        <ul class="list-unstyled following-list">             <!-- Создаём пустой список -->
+                            <li>Нет подписок</li>                             <!-- Сообщение пользователю, что подписок нет -->
+                        </ul>
+                    {% endif %}      
+                    <hr>                                                       <!-- Разделитель -->
+                    <a href="{% url 'logout' %}" class="btn btn-danger btn-sm">Выход</a>  <!-- Кнопка выхода -->
+                </div>
+            </div>
+        </li>
+    {% else %}
+        <li class="nav-item"><a class="nav-link" href="{% url 'login' %}">Вход</a></li>  <!-- Ссылка для входа -->
+        <li class="nav-item"><a class="nav-link" href="{% url 'vibemusic:register' %}">Регистрация</a></li>  <!-- Ссылка для регистрации -->
+    {% endif %}
+</ul>

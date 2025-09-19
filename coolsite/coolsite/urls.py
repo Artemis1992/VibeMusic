@@ -22,7 +22,12 @@ from django.contrib.auth import views as auth_views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', include('vibemusic.urls', namespace='vibemusic')),  # Добавляем namespace
+    path('', include('vibemusic.urls', namespace='vibemusic')),  # Подключаем маршруты приложения vibemusic
+    path('', include('django.contrib.auth.urls')),
     path('login/', auth_views.LoginView.as_view(template_name='vibemusic/login.html'), name='login'),
     path('logout/', auth_views.LogoutView.as_view(), name='logout'),
-] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+]
+
+# Добавляем медиа файлы для разработки 
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

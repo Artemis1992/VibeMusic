@@ -1,8 +1,15 @@
-{% extends "vibemusic/base.html" %}
+<!-- vibemusic/templates/vibemusic/about.html -->
+{% extends 'vibemusic/base.html' %}
+{% load static %}
+{% block title %}О нас - VibeMusic{% endblock %}
 {% block content %}
 <div class="container mt-4">
-    <h1>О сайте</h1>
-    <p>Добро пожаловать на Vibe Music! Здесь вы найдёте музыку и новости.</p>
+    <h1 class="mb-4 text-center">О нас</h1>
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <p>VibeMusic — платформа для любителей музыки, где вы можете делиться своими постами, треками и подписываться на любимых исполнителей.</p>
+            <p>Наша миссия — объединить музыкальное сообщество, предоставляя удобный интерфейс для взаимодействия и творчества.</p>
+        </div>
+    </div>
 </div>
-
 {% endblock %}

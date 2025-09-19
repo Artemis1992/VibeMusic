@@ -3,45 +3,67 @@
 {% load static %}
 
 {% block content %}
-<div class="container mt-4">
-    <h1>Регистрация</h1>
+<div class="container mt-5">
+    <div class="text-center mb-4">
+        <img src="https://via.placeholder.com/150?text=Vibemusic+Logo" alt="Vibemusic Logo" class="mb-3" style="max-width: 150px;">
+        <h1 class="header-title">Join Vibemusic</h1>
+    </div>
+    
     {% if messages %}
-        {% for message in messages %}
-            <div class="alert alert-{{ message.tags }}">{{ message }}</div>
-        {% endfor %}
+        <div class="alert-container">
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} mb-3">{{ message }}</div>
+            {% endfor %}
+        </div>
     {% endif %}
 
     <div class="form-container">
-        <form method="post">
+        <form method="post" id="register-form">
             {% csrf_token %}
-            <div class="mb-3">
-                {{ form.username.label_tag }}
-                {{ form.username }}
+            <div class="mb-3 position-relative">
+                <div class="input-group">
+                    {{ form.username }}
+                    <span class="spinner" id="username-spinner"></span>
+                </div>
+                <div class="validation-message" id="username-message"></div>
                 {{ form.username.errors }}
             </div>
-            <div class="mb-3">
-                {{ form.email.label_tag }}
-                {{ form.email }}
+            <div class="mb-3 position-relative">
+                <div class="input-group">
+                    {{ form.email }}
+                    <span class="spinner" id="email-spinner"></span>
+                </div>
+                <div class="validation-message" id="email-message"></div>
                 {{ form.email.errors }}
             </div>
-            <div class="mb-3">
-                {{ form.password1.label_tag }}
-                {{ form.password1 }}
+            <div class="mb-3 position-relative">
+                <div class="input-group">
+                    {{ form.password1 }}
+                    <span class="spinner" id="password1-spinner"></span>
+                </div>
+                <div class="validation-message" id="password1-message"></div>
                 {{ form.password1.errors }}
             </div>
-            <div class="mb-3">
-                {{ form.password2.label_tag }}
-                {{ form.password2 }}
+            <div class="mb-3 position-relative">
+                <div class="input-group">
+                    {{ form.password2 }}
+                    <span class="spinner" id="password2-spinner"></span>
+                </div>
+                <div class="validation-message" id="password2-message"></div>
                 {{ form.password2.errors }}
             </div>
-            <button type="submit" class="btn btn-primary">Зарегистрироваться</button>
+            <button type="submit" class="btn btn-primary mb-3">Зарегистрироваться</button>
+            <div class="text-center">
+                <a href="#" class="btn btn-outline-light mb-2">Sign up with Spotify</a>
+                <a href="#" class="btn btn-outline-light">Sign up with Google</a>
+            </div>
         </form>
+        <p class="text-muted mt-3 text-center">
+            Уже есть аккаунт? <a href="{% url 'vibemusic:login' %}" class="text-primary">Войти</a> |
+            <a href="#" class="text-primary">Условия использования</a>
+        </p>
     </div>
-
-    <form method="post" action="{% url 'logout' %}">
-        {% csrf_token %}
-        <button type="submit" class="btn btn-outline-light">Выйти</button>
-    </form>
-    </p>
 </div>
+
+<script src="{% static 'vibemusic/js/register_validation.js' %}"></script>
 {% endblock %}

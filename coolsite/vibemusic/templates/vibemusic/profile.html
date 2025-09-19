@@ -1,0 +1,87 @@
+<!-- vibemusic/templates/vibemusic/profile.html -->
+{% extends 'vibemusic/base.html' %}
+{% load static %}
+{% block title %}Профиль {{ user_profile.username }} - VibeMusic{% endblock %}
+{% block content %}
+<div class="container mt-5">
+    <h1>Профиль: {{ user_profile.username }}</h1>
+    {% if user_profile.profile.photo %}
+        <img src="{{ user_profile.profile.photo.url }}" alt="Аватар" class="rounded-circle" style="width: 100px; height: 100px; object-fit: cover;">
+    {% else %}
+        <img src="{% static 'vibemusic/images/placeholder.jpg' %}" alt="Аватар" class="rounded-circle" style="width: 100px; height: 100px; object-fit: cover;">
+    {% endif %}
+    
+    <!-- Кнопка подписки -->
+    {% if user.is_authenticated and user != user_profile %}
+        <button class="btn follow-btn {% if user.profile in user_profile.profile.followers.all %}btn-secondary{% else %}btn-primary{% endif %}" 
+                data-profile-id="{{ user_profile.id }}">{% if user.profile in user_profile.profile.followers.all %}Отписаться{% else %}Подписаться{% endif %}</button>
+    {% endif %}
+    
+    <!-- Активности -->
+    <h2 class="mt-4">Активности (Сообщения)</h2>
+    {% if activities %}
+        <ul>
+            {% for activity in activities %}
+                <li>{{ activity.message }} <small class="text-muted">({{ activity.created_at|date:"d.m.Y H:i" }})</small></li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p class="text-muted">Нет активности.</p>
+    {% endif %}
+    
+    <!-- Подписки -->
+    <h2 class="mt-4">Подписки</h2>
+    {% if following %}
+        <ul>
+            {% for follow in following %}
+                <li><a href="{% url 'vibemusic:profile' follow.user.id %}">{{ follow.user.username }}</a></li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p class="text-muted">Нет подписок.</p>
+    {% endif %}
+    
+    <!-- Посты -->
+    <h2 class="mt-4">Ваши посты</h2>
+    <a href="{% url 'vibemusic:add_post' %}" class="btn btn-primary mb-3">Добавить пост</a>
+    {% if user_posts %}
+        <ul>
+            {% for post in user_posts %}
+                <li><a href="{% url 'vibemusic:post_detail' post.slug %}">{{ post.title }}</a></li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p class="text-muted">Нет постов.</p>
+    {% endif %}
+    
+    <!-- Настройки -->
+    {% if user.is_authenticated and user == user_profile %}
+        <h2 class="mt-4">Изменить профиль</h2>
+        <form method="post" enctype="multipart/form-data" action="{% url 'vibemusic:profile' user.id %}">
+            {% csrf_token %}
+            <div class="mb-3">
+                <label for="photo" class="form-label">Фото</label>
+                <input type="file" name="photo" class="form-control" id="photo" accept="image/*">
+            </div>
+            <div class="mb-3">
+                <label for="phone_number" class="form-label">Номер телефона</label>
+                <input type="text" name="phone_number" value="{{ user_profile.profile.phone_number|default:'' }}" 
+                       class="form-control" id="phone_number" placeholder="+79991234567">
+            </div>
+            {% if not user_profile.profile.telegram_chat_id %}
+                <a href="https://t.me/{{ TELEGRAM_BOT_USERNAME }}?start={{ telegram_token }}" 
+                   target="_blank" class="btn btn-primary mt-3">Привязать Telegram</a>
+            {% else %}
+                <p class="text-success">Telegram привязан: {{ user_profile.profile.telegram_username }} 
+                   (chat_id: {{ user_profile.profile.telegram_chat_id }})</p>
+            {% endif %}
+            <button type="submit" class="btn btn-primary mt-3">Сохранить</button>
+        </form>
+    {% endif %}
+</div>
+
+<script>
+    var csrfToken = "{{ csrf_token }}";
+</script>
+<script src="{% static 'vibemusic/js/control_of_likes.js' %}"></script>
+{% endblock %}

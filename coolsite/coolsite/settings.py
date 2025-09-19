@@ -25,8 +25,8 @@ SECRET_KEY = 'django-insecure-hg6$tpf#c@m0x%r1fscanm@n*=0q7lli@4n0lr!(!9_a^%6#yw
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
 
+ALLOWED_HOSTS = ['localhost', '127.0.0.1',  '192.168.100.33']
 
 # Application definition
 
@@ -39,6 +39,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'debug_toolbar',
     'captcha',
+    'crispy_forms',
+    'crispy_bootstrap5',
     'widget_tweaks',
     'vibemusic.apps.VibemusicConfig',
 ]
@@ -59,7 +61,7 @@ ROOT_URLCONF = 'coolsite.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR / 'templates'],  # Папка с общими шаблонами
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -122,36 +124,64 @@ STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR / 'vibemusic/static']
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
+# учетные данные Spotify:
+# Для чтения метаданных из MP3-файлов устанавливаем библиотеку mutagen:
+SPOTIFY_CLIENT_ID = "9b9eedb0308a4800afcfab8a04618ee8"
+SPOTIFY_CLIENT_SECRET = "1654b0a4ed9441989c8439f0039d9d9b"
+
 # Media files
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
+# Или 'bootstrap4', если используете старую версию
+CRISPY_TEMPLATE_PACK = 'bootstrap5'
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+DEFAULT_ALBUM_IMAGE = 'image/default_album.jpg'
 
 # Pagination settings
-COMMENTS_PER_PAGE = 5  # Number of comments per page
-POSTS_PER_PAGE = 5     # Number of posts per page
+COMMENTS_PER_PAGE = 5  # Количество комментариев на страницу
+POSTS_PER_PAGE = 5     # Количество постов на страницу
 
 # Authentication redirects
-LOGIN_REDIRECT_URL = 'vibemusic:home'  # Redirect after login
-LOGOUT_REDIRECT_URL = 'vibemusic:home'  # Redirect after logout
+LOGIN_REDIRECT_URL = 'vibemusic:home'  # Перенаправление после входа
+LOGOUT_REDIRECT_URL = 'vibemusic:home'  # Перенапровление после выхода 
 
-# Logging for debugging
-LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'handlers': {
-        'console': {
-            'class': 'logging.StreamHandler',
-        },
-    },
-    'loggers': {
-        '': {
-            'handlers': ['console'],
-            'level': 'DEBUG',
-            'propagate': True,
-        },
-    },
-}
+
+# Обработка отправки писем для сброса пароля, настройки SMTP
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'           # Django будет использовать SMTP-сервер для отправки писем (например, Gmail, Yandex, Mailgun, либо корпоративный сервер). 
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'artem.flowers1@gmail.com'                           # Ваш реальный email
+EMAIL_HOST_PASSWORD = 'qhns odzq gjxs rljx'                          # Пароль приложения Gmail
+DEFAULT_FROM_EMAIL = 'artem.flowers1@gmail.com'
+TELEGRAM_BOT_TOKEN = '8311811025:AAGB7PfqMPakk2a68EIhhf4fmygpZh1xf7g'   # Токен телеграмм бота
+TELEGRAM_BOT_USERNAME = 'VibeMusicResetBot'                           # Username бота без @
+
+# EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'        # Отправка в консоль для сообщения 
+
+
+# Логирование для отладки 
+# LOGGING = {
+#     'version': 1,
+#     'disable_existing_loggers': False,
+#     'handlers': {
+#         'console': {
+#             'class': 'logging.StreamHandler',
+#         },
+#     },
+#     'loggers': {
+#         'django': {
+#             'handlers': ['console'],
+#             'level': 'DEBUG',
+#         },
+#         'vibemusic': {
+#             'handlers': ['console'],
+#             'level': 'DEBUG',
+#             'propagate': False,
+#         },
+#     },
+# }

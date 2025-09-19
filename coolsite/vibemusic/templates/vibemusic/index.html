@@ -1,9 +1,10 @@
+<!--index.html-->
 {% extends 'vibemusic/base.html' %}
 {% load static %}
 {% comment %} index.html {% endcomment %}
 {% block content %}
 <div class="container mt-4">
-    <h1 class="mb-4 text-center">Приятного прослушивания</h1>
+    <h1 class="mb-4 text-center">Приятного прослушивания</h1>           <!-- Заголовок страницы -->
 
     {% for post in page_obj %}
     <div class="card mb-4 shadow-sm d-flex flex-row" style="min-height: 300px; border-radius: 10px; overflow: hidden;">
@@ -32,13 +33,19 @@
         <!-- Описание (40%) -->
         <div class="card-body bg-secondary text-white d-flex flex-column justify-content-between" style="width: 40%; padding: 15px;">
             <div>
-                <h2 class="card-title h5 mb-2">{{ post.title }}</h2>
-                <p class="mb-0">{{ post.content|safe|truncatechars:1000 }}</p>
+                <h2 class="card-title h5 mb-2">{{ post.title }}</h2>        <!-- Заголовок поста -->
+                {% if user.is_authenticated and post.author != user %}      <!-- Проверяем авторизацию и что автор не текущий пользователь -->
+                    <a href="{% url 'vibemusic:toggle_follow' post.author.profile.id %}" 
+                       class="btn btn-sm {% if post.author.profile in user.profile.following.all %}btn-danger{% else %}btn-primary{% endif %} follow-btn mb-2">
+                        {% if post.author.profile in user.profile.following.all %}Отписаться{% else %}Подписаться{% endif %}
+                    </a>                                                    <!-- Кнопка подписки/отписки -->
+                {% endif %}
+                <p class="mb-0">{{ post.content|safe|truncatechars:1000 }}</p>  <!-- Содержимое поста -->
             </div>
         </div>
     </div>
     {% empty %}
-    <p class="text-center text-muted">Пока нет постов.</p>
+    <p class="text-center text-muted">Пока нет постов.</p>                 <!-- Сообщение, если постов нет -->
     {% endfor %}
 
     <!-- Пагинация постов -->
