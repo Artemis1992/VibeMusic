@@ -1,87 +1,177 @@
-<!-- vibemusic/templates/vibemusic/profile.html -->
-{% extends 'vibemusic/base.html' %}
-{% load static %}
-{% block title %}Профиль {{ user_profile.username }} - VibeMusic{% endblock %}
-{% block content %}
-<div class="container mt-5">
-    <h1>Профиль: {{ user_profile.username }}</h1>
-    {% if user_profile.profile.photo %}
-        <img src="{{ user_profile.profile.photo.url }}" alt="Аватар" class="rounded-circle" style="width: 100px; height: 100px; object-fit: cover;">
-    {% else %}
-        <img src="{% static 'vibemusic/images/placeholder.jpg' %}" alt="Аватар" class="rounded-circle" style="width: 100px; height: 100px; object-fit: cover;">
-    {% endif %}
-    
-    <!-- Кнопка подписки -->
-    {% if user.is_authenticated and user != user_profile %}
-        <button class="btn follow-btn {% if user.profile in user_profile.profile.followers.all %}btn-secondary{% else %}btn-primary{% endif %}" 
-                data-profile-id="{{ user_profile.id }}">{% if user.profile in user_profile.profile.followers.all %}Отписаться{% else %}Подписаться{% endif %}</button>
-    {% endif %}
-    
-    <!-- Активности -->
-    <h2 class="mt-4">Активности (Сообщения)</h2>
-    {% if activities %}
-        <ul>
-            {% for activity in activities %}
-                <li>{{ activity.message }} <small class="text-muted">({{ activity.created_at|date:"d.m.Y H:i" }})</small></li>
-            {% endfor %}
-        </ul>
-    {% else %}
-        <p class="text-muted">Нет активности.</p>
-    {% endif %}
-    
-    <!-- Подписки -->
-    <h2 class="mt-4">Подписки</h2>
-    {% if following %}
-        <ul>
-            {% for follow in following %}
-                <li><a href="{% url 'vibemusic:profile' follow.user.id %}">{{ follow.user.username }}</a></li>
-            {% endfor %}
-        </ul>
-    {% else %}
-        <p class="text-muted">Нет подписок.</p>
-    {% endif %}
-    
-    <!-- Посты -->
-    <h2 class="mt-4">Ваши посты</h2>
-    <a href="{% url 'vibemusic:add_post' %}" class="btn btn-primary mb-3">Добавить пост</a>
-    {% if user_posts %}
-        <ul>
-            {% for post in user_posts %}
-                <li><a href="{% url 'vibemusic:post_detail' post.slug %}">{{ post.title }}</a></li>
-            {% endfor %}
-        </ul>
-    {% else %}
-        <p class="text-muted">Нет постов.</p>
-    {% endif %}
-    
-    <!-- Настройки -->
-    {% if user.is_authenticated and user == user_profile %}
-        <h2 class="mt-4">Изменить профиль</h2>
-        <form method="post" enctype="multipart/form-data" action="{% url 'vibemusic:profile' user.id %}">
-            {% csrf_token %}
-            <div class="mb-3">
-                <label for="photo" class="form-label">Фото</label>
-                <input type="file" name="photo" class="form-control" id="photo" accept="image/*">
+{% load static crispy_forms_tags %}
+<ul class="navbar-nav">
+    {% if user.is_authenticated %}
+        <li class="nav-item"><a class="nav-link" href="{% url 'vibemusic:add_post' %}">Добавить пост</a></li>
+        <li class="nav-item profile-dropdown">
+            <a class="nav-link profile-trigger" href="#" id="profileDropdown">
+                <img src="{% if user.profile.photo %}{{ user.profile.photo.url }}{% else %}{% static 'vibemusic/images/placeholder.jpg' %}{% endif %}" 
+                     alt="Аватар" class="rounded-circle avatar-img" style="width: 40px; height: 40px; object-fit: cover;">
+            </a>
+            <div class="profile-menu">
+                <div class="profile-menu-content">
+                    <div class="profile-header">
+                        <img src="{% if user.profile.photo %}{{ user.profile.photo.url }}{% else %}{% static 'vibemusic/images/placeholder.jpg' %}{% endif %}" 
+                             alt="Аватар" class="rounded-circle avatar-menu-img">
+                        <div class="profile-info">
+                            <h6 class="text-white mb-0">{{ user.username }}</h6>
+                            {% if user.profile.telegram_username %}
+                                <small class="text-muted">{{ user.profile.telegram_username }}</small>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <ul class="profile-links">
+                        <li><a href="#" class="text-white text-decoration-none" data-bs-toggle="modal" data-bs-target="#myProfileModal">Мой профиль</a></li>
+                        <li><a href="#" class="text-white text-decoration-none" data-bs-toggle="modal" data-bs-target="#profileEditModal">Настройки профиля</a></li>
+                        {% if user.profile.telegram_chat_id %}
+                            <li><a href="#" class="text-white text-decoration-none" data-bs-toggle="modal" data-bs-target="#telegramSettingsModal">Telegram</a></li>
+                        {% else %}
+                            <li><a href="https://t.me/{{ TELEGRAM_BOT_USERNAME }}?start={{ telegram_token }}" target="_blank" class="text-white text-decoration-none">Привязать Telegram</a></li>
+                        {% endif %}
+                    </ul>
+                    <hr class="bg-light opacity-25 my-2">
+                    <div class="profile-footer">
+                        <a href="#" class="btn btn-danger btn-sm w-100" data-bs-toggle="modal" data-bs-target="#logoutConfirmModal">Выход</a>
+                    </div>
+                </div>
             </div>
-            <div class="mb-3">
-                <label for="phone_number" class="form-label">Номер телефона</label>
-                <input type="text" name="phone_number" value="{{ user_profile.profile.phone_number|default:'' }}" 
-                       class="form-control" id="phone_number" placeholder="+79991234567">
-            </div>
-            {% if not user_profile.profile.telegram_chat_id %}
-                <a href="https://t.me/{{ TELEGRAM_BOT_USERNAME }}?start={{ telegram_token }}" 
-                   target="_blank" class="btn btn-primary mt-3">Привязать Telegram</a>
-            {% else %}
-                <p class="text-success">Telegram привязан: {{ user_profile.profile.telegram_username }} 
-                   (chat_id: {{ user_profile.profile.telegram_chat_id }})</p>
-            {% endif %}
-            <button type="submit" class="btn btn-primary mt-3">Сохранить</button>
-        </form>
+        </li>
+    {% else %}
+        <li class="nav-item"><a class="nav-link" href="{% url 'login' %}">Вход</a></li>
+        <li class="nav-item"><a class="nav-link" href="{% url 'vibemusic:register' %}">Регистрация</a></li>
     {% endif %}
+</ul>
+
+<!-- Модальное окно для "Мой профиль" -->
+<div class="modal fade" id="myProfileModal" tabindex="-1" aria-labelledby="myProfileModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="myProfileModalLabel">Профиль: {{ user.username }}</h5>
+                <button type="button" class="btn-close close-modal-btn" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <!-- Аватар -->
+                <img src="{% if user.profile.photo %}{{ user.profile.photo.url }}{% else %}{% static 'vibemusic/images/placeholder.jpg' %}{% endif %}" 
+                     alt="Аватар" class="rounded-circle avatar-img" style="width: 100px; height: 100px; object-fit: cover;">
+                
+                <!-- Активности -->
+                <h2 class="mt-4">Активности (Сообщения)</h2>
+                {% if activities %}
+                    <ul>
+                        {% for activity in activities %}
+                            <li>{{ activity.message }} <small class="text-muted">({{ activity.created_at|date:"d.m.Y H:i" }})</small></li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p class="text-muted">Нет активности.</p>
+                {% endif %}
+                
+                <!-- Подписки -->
+                <h2 class="mt-4">Подписки</h2>
+                {% if following %}
+                    <ul>
+                        {% for follow in following %}
+                            <li><a href="{% url 'vibemusic:profile' follow.user.id %}">{{ follow.user.username }}</a></li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p class="text-muted">Нет подписок.</p>
+                {% endif %}
+                
+                <!-- Посты -->
+                <h2 class="mt-4">Ваши посты</h2>
+                <a href="{% url 'vibemusic:add_post' %}" class="btn btn-primary">Добавить пост</a>
+                {% if user_posts %}
+                    <ul class="profile-list">
+                        {% for post in user_posts %}
+                            <li><a href="{% url 'vibemusic:post_detail' post.slug %}">{{ post.title }}</a></li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p class="text-muted">Нет постов.</p>
+                {% endif %}
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+            </div>
+        </div>
+    </div>
 </div>
 
-<script>
-    var csrfToken = "{{ csrf_token }}";
-</script>
-<script src="{% static 'vibemusic/js/control_of_likes.js' %}"></script>
-{% endblock %}
+<!-- Модальное окно для "Настройки профиля" (уже было, но с dirty-form логикой) -->
+<div class="modal fade" id="profileEditModal" tabindex="-1" aria-labelledby="profileEditModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="profileEditModalLabel">Редактировать профиль</h5>
+                <button type="button" class="btn-close close-modal-btn" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form method="post" enctype="multipart/form-data" action="{% url 'vibemusic:update_profile' %}" id="profileEditForm">
+                    {% csrf_token %}
+                    {{ form|crispy }}
+                    {% if form.errors %}
+                        <div class="alert alert-danger mt-2">
+                            {{ form.errors }}
+                        </div>
+                    {% endif %}
+                    <button type="submit" class="btn btn-primary btn-sm mt-2">Сохранить</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно для "Telegram" (уже было) -->
+<div class="modal fade" id="telegramSettingsModal" tabindex="-1" aria-labelledby="telegramSettingsModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="telegramSettingsModalLabel">Telegram</h5>
+                <button type="button" class="btn-close close-modal-btn" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p class="text-success">Telegram привязан: {{ user.profile.telegram_username }} (chat_id: {{ user.profile.telegram_chat_id }})</p>
+                <a href="#" class="btn btn-danger btn-sm w-100 mt-2" data-bs-dismiss="modal" onclick="window.location.href='https://t.me/{{ TELEGRAM_BOT_USERNAME }}?start=unsubscribe'">Отвязать</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно для подтверждения выхода -->
+<div class="modal fade" id="logoutConfirmModal" tabindex="-1" aria-labelledby="logoutConfirmModalLabel" aria-hidden="true">
+    <div class="modal-dialog confirm-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="logoutConfirmModalLabel">Подтверждение выхода</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Вы уверены, что хотите выйти?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                <a href="{% url 'logout' %}" class="btn btn-danger">Выйти</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Подтверждающий модал для несохранённых изменений (общий для всех форм) -->
+<div class="modal fade" id="confirmSaveModal" tabindex="-1" aria-labelledby="confirmSaveModalLabel" aria-hidden="true">
+    <div class="modal-dialog confirm-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="confirmSaveModalLabel">Несохранённые изменения</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>У вас есть несохранённые изменения. Сохранить их перед закрытием?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" id="discardChangesBtn">Не сохранять</button>
+                <button type="button" class="btn btn-primary" id="saveChangesBtn">Сохранить</button>
+            </div>
+        </div>
+    </div>
+</div>

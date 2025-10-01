@@ -1,0 +1,16 @@
+<!--post_form.html-->
+{% extends 'vibemusic/base.html' %}
+{% load crispy_forms_tags %}
+{% load static %}
+
+{% block title %}Создать пост - Vibe Music{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2>Создать новый пост</h2>
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {% crispy form %%}
+    </form>
+</div>
+{% endblock %}

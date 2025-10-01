@@ -12,7 +12,7 @@ from django.contrib.auth.views import (
     PasswordResetView, PasswordResetDoneView, PasswordResetConfirmView, PasswordResetCompleteView,
     LoginView,
 )
-from .models import Post, Genre, Artist, Comment, SiteSettings, Track, Reaction, Profile
+from .models import *
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse, HttpResponse
 from django.urls import reverse, reverse_lazy
@@ -25,6 +25,7 @@ from .utils import *
 import threading
 import logging
 import json
+import re
 
 logger = logging.getLogger(__name__)
 
@@ -63,7 +64,19 @@ class PostListView(DataMixin, ProfileContextMixin, ListView):
                 context['selected_genre'] = None                           # Устанавливаем None, если жанр не найден
         else:
             context['selected_genre'] = None                               # Устанавливаем None, если жанр не указан
+        
+
+                # Добавляем меню через DataMixin
+        extra_context = self.get_context_menu(title="Главная")              # Вызываем метод для получения меню
+        context.update(extra_context)
+
+        # Дополнительная информация
+        context['current_date'] = timezone.now()                           # Текущая дата и время
+        context['post_count'] = Post.objects.count()
+
         return context                                                     # Возвращаем обновлённый контекст
+    
+
 
 class PostDetailView(DataMixin, ProfileContextMixin, DetailView):
     model = Post                                                               # Указываем модель Post для представления
@@ -93,6 +106,8 @@ class PostDetailView(DataMixin, ProfileContextMixin, DetailView):
         context['site_settings'] = SiteSettings.objects.first()            # Добавляем настройки сайта
         return {**context, **extra_context}                                # Объединяем контексты и возвращаем
 
+
+
 class TrackUploadView(LoginRequiredMixin, ProfileContextMixin, CreateView):
     model = Track                                                              # Указываем модель Track для представления
     form_class = TrackUploadForm                                               # Указываем форму TrackUploadForm для ввода данных
@@ -117,6 +132,8 @@ class TrackUploadView(LoginRequiredMixin, ProfileContextMixin, CreateView):
         messages.error(self.request, "Ошибка при загрузке трека.")         # Добавляем сообщение об ошибке
         return self.render_to_response(self.get_context_data(form=form))   # Рендерим шаблон с формой и ошибками
 
+
+
 class RegisterView(DataMixin, CreateView):
     form_class = RegisterForm                                                  # Указываем форму RegisterForm для регистрации
     template_name = 'vibemusic/register.html'                                  # Задаём шаблон для страницы регистрации
@@ -138,6 +155,8 @@ class RegisterView(DataMixin, CreateView):
         extra_context = self.get_context_menu(title="Регистрация")            # Получаем контекст меню
         context['site_settings'] = SiteSettings.objects.first()                # Добавляем настройки сайта
         return {**context, **extra_context}                                    # Объединяем контексты и возвращаем
+
+
 
 class LoginView(DataMixin, LoginView):
     form_class = LoginViewForm                                                 # Указываем форму LoginViewForm для входа
@@ -167,6 +186,8 @@ class LoginView(DataMixin, LoginView):
 def logout_user(request):
     logout(request)                                                            # Выполняем выход пользователя
     return redirect('login')                                                   # Перенаправляем на страницу входа
+
+
 
 class GenreDetailView(DataMixin, ProfileContextMixin, DetailView):
     model = Genre                                                              # Указываем модель Genre для представления
@@ -202,6 +223,8 @@ class GenreDetailView(DataMixin, ProfileContextMixin, DetailView):
         extra_context = self.get_context_menu(title=f"Жанр: {genre.name}")     # Получаем контекст меню
         return {**context, **extra_context}                                    # Объединяем контексты и возвращаем
 
+
+
 class ArtistDetailView(DataMixin, ProfileContextMixin, DetailView):
     model = Artist                                                             # Указываем модель Artist для представления
     template_name = 'vibemusic/artist_detail.html'                             # Задаём шаблон для страницы исполнителя
@@ -214,21 +237,32 @@ class ArtistDetailView(DataMixin, ProfileContextMixin, DetailView):
         context['site_settings'] = SiteSettings.objects.first()                # Добавляем настройки сайта
         return {**context, **extra_context}                                    # Объединяем контексты и возвращаем
 
+
+
 class PostCreateView(DataMixin, LoginRequiredMixin, ProfileContextMixin, CreateView):
     model = Post                                                               # Указываем модель Post для представления
-    fields = PostForm                # Поля формы создания поста
+    form_class = PostForm                                                      # Поля формы создания поста
     template_name = 'vibemusic/post_form.html'                                 # Задаём шаблон для формы создания поста
     success_url = reverse_lazy('vibemusic:home')                               # Устанавливаем URL перенаправления
 
     def form_valid(self, form):
-        form.instance.author = self.request.user                               # Устанавливаем текущего пользователя автором
+        form.instance.author = self.request.user                               # Устанавливаем текущего пользователя как автора
+        logger.info(f"Пользователь {self.request.user.username} создал пост: {form.cleaned_data['title']}")
+        messages.success(self.request, "Пост успешно создан!")
         return super().form_valid(form)                                        # Вызываем родительский метод form_valid
 
+    def form_invalid(self, form):
+        logger.warning(f"Ошибка создания поста пользователем {self.request.user.username}: {form.errors}")
+        messages.error(self.request, "Ошибка при создании поста. Проверьте данные.")
+        return super().form_invalid(form)
+        
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)                           # Получаем базовый контекст
         extra_context = self.get_context_menu(title="Создание поста")          # Получаем контекст меню
         context['site_settings'] = SiteSettings.objects.first()                # Добавляем настройки сайта
         return {**context, **extra_context}                                    # Объединяем контексты и возвращаем
+
+
 
 class ToggleLikeView(LoginRequiredMixin, View):
     def post(self, request, *args, **kwargs):
@@ -279,6 +313,9 @@ class ToggleLikeView(LoginRequiredMixin, View):
         except Exception as e:
             return JsonResponse({'success': False, 'message': str(e)}, status=400)  # Возвращаем ошибку для других исключений
 
+
+
+
 class AddCommentView(LoginRequiredMixin, View):
     def post(self, request, post_slug, *args, **kwargs):
         post = get_object_or_404(Post, slug=post_slug)                         # Находим пост по slug или возвращаем 404
@@ -294,49 +331,66 @@ class AddCommentView(LoginRequiredMixin, View):
             messages.error(request, "Ошибка при добавлении комментария.")      # Добавляем сообщение об ошибке
             return redirect('vibemusic:post_detail', post_slug=post.slug)      # Перенаправляем на страницу поста
 
+
+
 class TelegramWebhookView(View):
     def post(self, request, *args, **kwargs):
-        if request.method != 'POST':                                           # Проверяем, что запрос является POST
-            return HttpResponse(status=405)                                    # Возвращаем ошибку для неразрешённого метода
+        if request.method != 'POST':
+            return HttpResponse(status=405)
         try:
-            data = json.loads(request.body)                                    # Декодируем JSON из тела запроса
+            data = json.loads(request.body)
         except json.JSONDecodeError:
-            return JsonResponse({'ok': False, 'error': 'Invalid JSON'}, status=400)  # Возвращаем ошибку для неверного JSON
-        message = data.get('message') or data.get('edited_message')         # Получаем сообщение или отредактированное сообщение
-        if not message:                                                    # Проверяем наличие сообщения
-            return JsonResponse({'ok': True})                              # Возвращаем успешный ответ, если сообщения нет
-        text = message.get('text', '')                                     # Извлекаем текст сообщения
-        chat_id = message['chat'].get('id')                                # Получаем ID чата
-        username = message['from'].get('username')                         # Получаем имя пользователя Telegram
-        if text.startswith('/start'):                                      # Проверяем, является ли команда /start
-            self._handle_start_command(chat_id, username, text)            # Обрабатываем команду /start
-        return JsonResponse({'ok': True})                                  # Возвращаем успешный ответ
+            return JsonResponse({'ok': False, 'error': 'Invalid JSON'}, status=400)
+        message = data.get('message') or data.get('edited_message')
+        if not message:
+            return JsonResponse({'ok': True})
+        text = message.get('text', '')
+        chat_id = message['chat'].get('id')
+        username = message['from'].get('username')
+        if text.startswith('/start'):
+            self._handle_start_command(chat_id, username, text)
+        elif text.startswith('/unsubscribe'):
+            self._handle_unsubscribe_command(chat_id)
+        return JsonResponse({'ok': True})
 
     def _handle_start_command(self, chat_id, username, text):
-        parts = text.split()                                               # Разделяем текст на части
-        if len(parts) > 1:                                                 # Проверяем наличие токена после /start
-            token = parts[1]                                               # Извлекаем токен
-            user_pk = unsign_telegram_connect_token(token)                 # Проверяем и расшифровываем токен
-            if user_pk:                                                    # Если токен валиден
-                user = get_object_or_404(User, pk=user_pk)                 # Находим пользователя или возвращаем 404
-                profile, _ = Profile.objects.get_or_create(user=user)       # Получаем или создаём профиль
-                profile.telegram_chat_id = chat_id                         # Устанавливаем ID чата
-                profile.telegram_username = f"@{username}" if username else None  # Устанавливаем имя пользователя Telegram
-                profile.save()                                             # Сохраняем профиль
+        parts = text.split()
+        if len(parts) > 1:
+            token = parts[1]
+            user_pk = unsign_telegram_connect_token(token)
+            if user_pk:
+                user = get_object_or_404(User, pk=user_pk)
+                profile, _ = Profile.objects.get_or_create(user=user)
+                profile.telegram_chat_id = chat_id
+                profile.telegram_username = f"@{username}" if username else None
+                profile.save()
                 threading.Thread(
                     target=send_telegram_message,
-                    args=(chat_id, "Ваш аккаунт успешно привязан к Telegram! Теперь вы можете получать уведомления.")
-                ).start()                                                  # Отправляем сообщение асинхронно
+                    args=(chat_id, "Ваш аккаунт успешно привязан к Telegram!")
+                ).start()
             else:
                 threading.Thread(
                     target=send_telegram_message,
-                    args=(chat_id, "Неверный или просроченный токен. Попробуйте заново.")
-                ).start()                                                  # Отправляем сообщение об ошибке
-    def dispatch(self, request, *args, **kwargs):
-        if request.method.lower() in self.http_method_names:                # Проверяем, поддерживается ли метод запроса
-            handler = getattr(self, request.method.lower(), self.http_method_not_allowed)  # Получаем обработчик метода
-            return handler(request, *args, **kwargs)                       # Вызываем обработчик
-        return super().dispatch(request, *args, **kwargs)                  # Вызываем родительский dispatch
+                    args=(chat_id, "Неверный или просроченный токен.")
+                ).start()
+
+    def _handle_unsubscribe_command(self, chat_id):
+        try:
+            profile = Profile.objects.get(telegram_chat_id=chat_id)
+            profile.telegram_chat_id = None
+            profile.telegram_username = None
+            profile.save()
+            threading.Thread(
+                target=send_telegram_message,
+                args=(chat_id, "Ваш аккаунт отвязан от Telegram.")
+            ).start()
+        except Profile.DoesNotExist:
+            threading.Thread(
+                target=send_telegram_message,
+                args=(chat_id, "Ошибка: профиль не найден.")
+            ).start()
+
+
 
 class CustomPasswordResetView(PasswordResetView):
     template_name = 'vibemusic/password_reset.html'                            # Задаём шаблон для сброса пароля
@@ -365,20 +419,30 @@ class CustomPasswordResetView(PasswordResetView):
                 pass                                                           # Пропускаем, если профиль не найден
         return response                                                    # Возвращаем ответ
 
+
+
 class CustomLoginView(LoginView):
     form_class = LoginViewForm                                                 # Указываем форму LoginViewForm
     template_name = 'vibemusic/login.html'                                     # Задаём шаблон для входа
     success_url = reverse_lazy('vibemusic:home')                               # Устанавливаем URL перенаправления
 
+
+
 class CustomPasswordResetDoneView(PasswordResetDoneView):
     template_name = 'vibemusic/password_reset_done.html'                       # Задаём шаблон для страницы после сброса
+
+
 
 class CustomPasswordResetConfirmView(PasswordResetConfirmView):
     template_name = 'vibemusic/password_reset_confirm.html'                    # Задаём шаблон для подтверждения сброса
     success_url = reverse_lazy('vibemusic:password_reset_complete')            # Устанавливаем URL перенаправления
 
+
+
 class CustomPasswordResetCompleteView(PasswordResetCompleteView):
     template_name = 'vibemusic/password_reset_complete.html'                   # Задаём шаблон для завершения сброса
+
+
 
 class AboutView(DataMixin, ProfileContextMixin, TemplateView):
     template_name = 'vibemusic/about.html'  # Шаблон для страницы "О нас"
@@ -407,6 +471,7 @@ def contact(request):
     return render(request, 'vibemusic/contact.html', context)                  # Рендерим шаблон с контекстом
 
 
+
 class ProfileView(DataMixin, ProfileContextMixin, DetailView):
     model = User
     template_name = 'vibemusic/profile.html'
@@ -420,9 +485,9 @@ class ProfileView(DataMixin, ProfileContextMixin, DetailView):
         context['user_posts'] = Post.objects.filter(author=self.object)
         context['following'] = self.object.profile.following.all()
         context['profile'] = self.object.profile
-        context['telegram_token'] = self.request.user.profile.telegram_token if self.request.user.is_authenticated else ''
+        context['telegram_token'] = make_telegram_connect_token(self.request.user) if self.request.user.is_authenticated else ''
         context['TELEGRAM_BOT_USERNAME'] = settings.TELEGRAM_BOT_USERNAME
-        context['activities'] = Activity.objects.filter(user=self.object)[:10]  # Последние 10 активностей
+        context['activities'] = Activity.objects.filter(user=self.object)[:10]
         return {**context, **extra_context}
 
     def post(self, request, *args, **kwargs):
@@ -433,12 +498,17 @@ class ProfileView(DataMixin, ProfileContextMixin, DetailView):
 
         if photo:
             profile.photo = photo
-        if phone_number:
+        if phone_number and re.match(r'^\+7\d{10}$', phone_number):  # Проверка формата номера
             profile.phone_number = phone_number
-        profile.save()
+        else:
+            messages.error(request, 'Неверный формат номера телефона.')
+            return redirect('vibemusic:profile', pk=self.object.id)
 
+        profile.save()
         messages.success(request, 'Профиль успешно обновлён!')
         return redirect('vibemusic:profile', pk=self.object.id)
+
+
 
 class UpdateProfileView(LoginRequiredMixin, ProfileContextMixin, UpdateView):
     model = Profile                                                            # Указываем модель Profile для представления

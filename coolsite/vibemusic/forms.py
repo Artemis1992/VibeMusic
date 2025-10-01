@@ -116,9 +116,13 @@ class ProfileForm(forms.ModelForm):
             raise forms.ValidationError('Имя пользователя Telegram должно начинаться с @.')  # Выбрасываем ошибку
         return username  # Возвращаем username, если валиден
 
+
+
 # Форма для создания поста
 class MultipleFileInput(forms.ClearableFileInput):
     allow_multiple_selected = True  # Разрешаем множественный выбор файлов
+
+
 
 class PostForm(forms.ModelForm):
     images = forms.FileField(
@@ -206,6 +210,8 @@ class PostForm(forms.ModelForm):
                 post.tracks.add(track_instance)  # Добавляем к посту
             self.save_m2m()  # Сохраняем ManyToMany связи (artist, genre)
         return post  # Возвращаем пост
+
+
 
 # Форма для комментариев
 class CommentForm(forms.ModelForm):

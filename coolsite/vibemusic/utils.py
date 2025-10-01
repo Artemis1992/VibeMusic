@@ -32,7 +32,7 @@ class DataMixin:
         from vibemusic.models import Genre
         context = kwargs.copy()
         context['menu'] = menu
-        context['genres'] = Genre.objects.all()
+        context['genres'] = Genre.objects.all()               # Cписок всех жанров из модели Genre
         return context
 
     def get_paginated_comments(self, comments, request):
