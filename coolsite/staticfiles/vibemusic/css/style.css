@@ -1,8 +1,6 @@
-/* style.css */
 /* ==========================================================================
    СЕКЦИЯ 1: СБРОС СТАНДАРТНЫХ СТИЛЕЙ
    ========================================================================== */
-/* Сброс всех стандартных отступов, полей и настройка модели блока */
 * {
     margin: 0;
     padding: 0;
@@ -10,223 +8,230 @@
 }
 
 /* ==========================================================================
-   СЕКЦИЯ 2: ОСНОВНЫЕ СТИЛИ ТЕМЫ И ТЕЛА ДОКУМЕНТА
+   СЕКЦИЯ 2: ОСНОВНЫЕ СТИЛИ ТЕЛА ДОКУМЕНТА
    ========================================================================== */
-/* Общие стили для тела документа с тёмной темой */
 body {
-    background-color: #1a1a1a; /* Тёмный фон для всей страницы */
-    color: #ffffff; /* Основной цвет текста */
-    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; /* Четкий шрифт */
-    line-height: 1.6; /* Высота строк для читаемости */
-    background-size: cover; /* Фон занимает весь экран */
-    background-position: center; /* Центрирование фона */
-    background-repeat: no-repeat; /* Убираем повторение фона */
-    background-attachment: fixed; /* Фиксируем фон при прокрутке */
+    background-color: #1a1a1a;
+    color: #ffffff;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    line-height: 1.6;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    animation: fadeBackground 15s infinite;
 }
 
-/* Поддержка динамического фона через атрибут data-background-image */
 body[data-background-image] {
-    background-image: var(--background-image); /* Используем CSS-переменную */
+    background-image: var(--background-image);
+}
+
+@keyframes fadeBackground {
+    0% { opacity: 0.7; }
+    50% { opacity: 1; }
+    100% { opacity: 0.7; }
 }
 
 /* ==========================================================================
    СЕКЦИЯ 3: СТИЛИ ДЛЯ ФОРМ И КОНТЕЙНЕРОВ
    ========================================================================== */
-/* Контейнер для форм с центрированием */
 .form-container {
-    max-width: 400px; /* Ограничение ширины */
-    margin: 0 auto; /* Центрирование по горизонтали */
-    padding: 20px; /* Внутренние отступы */
+    max-width: 400px;
+    margin: 50px auto;
+    padding: 20px;
+    background-color: rgba(0, 0, 0, 0.7);
+    border-radius: 8px;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
 }
 
-/* Стили для полей ввода */
 .form-control {
-    max-width: 400px; /* Ограничение ширины поля */
-    margin-bottom: 10px; /* Отступ снизу */
-    background-color: #c0bebe; /* Тёмный фон поля */
-    color: #ffffff; /* Белый текст */
-    border: 1px solid #8b8b8b; /* Граница */
+    max-width: 400px;
+    margin-bottom: 10px;
+    background-color: rgba(204, 204, 204, 0.3);
+    border: 1px solid #b9b9b9;
+    color: #ffffff;
+    padding: 10px;
+    border-radius: 4px;
+    width: 100%;
+    font-size: 1rem;
 }
 
-/* Текстовая область в формах */
+.form-control:focus {
+    border-color: #ff6600;
+    box-shadow: 0 0 5px rgba(255, 102, 0, 0.5);
+    outline: none;
+}
+
 textarea.form-control {
-    resize: vertical; /* Разрешить изменение только по высоте */
-    min-height: 100px; /* Минимальная высота */
+    resize: vertical;
+    min-height: 100px;
 }
 
 /* ==========================================================================
-   СЕКЦИЯ 4: СТИЛИ ДЛЯ КАРТОЧЕК И ПОСТОВ
+   СЕКЦИЯ 4: СТИЛИ ДЛЯ КАРТОЧЕК ПОСТОВ
    ========================================================================== */
-/* Общие стили для карточек постов */
 .card {
-    border: none; /* Убираем стандартную границу */
-    border-radius: 10px; /* Скругление углов */
-    overflow: hidden; /* Скрываем переполнение */
-    width: 100%; /* Полная ширина */
-    height: 400px; /* Фиксированная высота */
-    max-width: 1200px; /* Максимальная ширина */
-    margin-left: auto; /* Центрирование */
-    margin-right: auto; /* Центрирование */
+    border: none;
+    border-radius: 10px;
+    overflow: hidden;
+    width: 100%;
+    height: 400px;
+    max-width: 1200px;
+    margin: 0 auto;
 }
 
-/* Секция изображения в карточке */
 .post-image {
-    width: 60%; /* Занимает 60% карточки */
-    height: 100%; /* Полная высота карточки */
-    position: relative; /* Для позиционирования дочерних элементов */
+    width: 60%;
+    height: 100%;
+    position: relative;
 }
 
 .post-image img {
-    width: 100%; /* Полная ширина контейнера */
-    height: 100%; /* Полная высота контейнера */
-    object-fit: cover; /* Изображение заполняет контейнер */
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
 }
 
-/* Тело карточки */
 .card-body {
-    background-color: transparent; /* Прозрачный фон */
-    width: 40%; /* Занимает 40% карточки */
-    padding: 15px; /* Внутренние отступы */
+    background-color: transparent;
+    width: 40%;
+    padding: 15px;
 }
 
-/* Адаптивность карточек для мобильных устройств */
 @media (max-width: 768px) {
     .card {
-        flex-direction: column; /* Стековые элементы */
-        height: auto; /* Адаптивная высота */
-        max-width: 100%; /* Полная ширина */
+        flex-direction: column;
+        height: auto;
+        max-width: 100%;
     }
     .post-image {
-        width: 100%; /* Полная ширина */
-        height: 300px; /* Фиксированная высота на мобильных */
+        width: 100%;
+        height: 300px;
     }
     .card-body {
-        width: 100%; /* Полная ширина */
+        width: 100%;
     }
 }
 
 /* ==========================================================================
-   СЕКЦИЯ 5: СТИЛИ ШАПКИ И НАВИГАЦИОННОГО МЕНЮ
+   СЕКЦИЯ 5: СТИЛИ ДЛЯ ШАПКИ И НАВИГАЦИИ
    ========================================================================== */
-/* Общие стили для шапки */
 .header {
-    position: relative; /* Для позиционирования фона и контента */
-    width: 100%; /* Полная ширина */
-    height: 400px; /* Базовая высота */
-    margin: 0 auto; /* Центрирование */
-    overflow: hidden; /* Скрываем переполнение */
-    z-index: 1; /* Над контентом страницы */
-    background-color: rgba(52, 58, 64, 0.8); /* Полупрозрачный фон, как у плеера */
+    position: relative;
+    width: 100%;
+    height: 400px;
+    margin: 0 auto;
+    overflow: hidden;
+    z-index: 1;
+    background-color: rgba(52, 58, 64, 0.8);
 }
 
 .header > div {
-    position: absolute; /* Абсолютное позиционирование */
-    top: 0; /* Сверху */
-    left: 0; /* Слева */
-    width: 100%; /* Полная ширина */
-    height: 100%; /* Полная высота */
-    background-size: cover; /* Изображение заполняет контейнер */
-    background-position: center; /* Центрирование изображения */
-    background-repeat: no-repeat; /* Убираем повторение */
-    filter: brightness(0.75); /* Лёгкое затемнение для контраста */
-    z-index: -1; /* Под контентом */
-}
-
-/* Фон для страницы поста */
-.header[style*="post.artist"] > div {
-    background-image: url('{% if post.artist and post.artist.photo %}{{ post.artist.photo.url }}{% else %}{% static "vibemusic/images/placeholder.jpg" %}{% endif %}');
-}
-
-/* Фон для главной страницы */
-.header[style*="site_settings.header_image"] > div {
-    background-image: url('{{ site_settings.header_image.url|default:"/static/vibemusic/images/placeholder.jpg" }}');
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    filter: brightness(0.75);
+    z-index: -1;
 }
 
 .header .container {
-    position: relative; /* Для позиционирования над фоном */
-    z-index: 1; /* Над фоновым изображением */
+    position: relative;
+    z-index: 2;
 }
 
-/* Адаптивность шапки */
 @media (max-width: 768px) {
     .header {
-        height: 200px; /* Уменьшение высоты на мобильных */
-    }
-    .header > div {
-        background-size: cover; /* Сохранение пропорций */
+        height: 200px;
     }
 }
 
-/* Стили навигационного меню */
 .navbar {
-    margin-bottom: 0; /* Убираем нижний отступ */
-    padding: 10px 0; /* Вертикальные и горизонтальные отступы */
-    background-color: rgba(52, 58, 64, 0.8); /* Полупрозрачный фон, как у плеера */
-    z-index: 100; /* Над шапкой */
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1030;
+    background-color: rgba(52, 58, 64, 0.95);
+    padding: 10px 0;
 }
 
 .navbar-dark .navbar-nav .nav-link {
-    color: #ffffff; /* Чисто белый текст */
-    font-weight: 700; /* Жирный шрифт для четкости */
-    font-size: 1.1rem; /* Увеличенный размер шрифта */
-    opacity: 1; /* Полная непрозрачность */
-    text-decoration: none; /* Убираем подчёркивание */
+    color: #ffffff;
+    font-weight: 700;
+    font-size: 1.1rem;
+    text-decoration: none;
 }
 
 .navbar-dark .navbar-nav .nav-link:hover {
-    color: #ff5e00; /* Яркий оранжевый при наведении */
+    color: #ff5e00;
 }
 
 .navbar-dark .navbar-brand {
-    color: #ff5100; /* Яркий оранжевый цвет бренда */
-    font-weight: bold; /* Жирный шрифт */
-    font-size: 1.5rem; /* Увеличенный размер бренда */
+    color: #ff5100;
+    font-weight: bold;
+    font-size: 1.5rem;
 }
 
 .navbar-dark .navbar-brand:hover {
-    color: #ffffff; /* Белый при наведении */
+    color: #ffffff;
 }
 
 .navbar-dark .dropdown-menu {
-    background-color: rgba(52, 58, 64, 0.9); /* Полупрозрачный фон для меню */
-    border: none; /* Убираем границу */
-    min-width: 200px; /* Минимальная ширина */
-    /* Убираем фиксированное display для корректной работы JS */
+    display: none !important;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    z-index: 1045;
+    background-color: rgba(26, 26, 26, 0.95);
+    border: none;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+    opacity: 0;
+    transform: translateY(-10px);
+    transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.navbar-dark .dropdown-menu.show {
+    display: block !important;
+    opacity: 1;
+    transform: translateY(0);
 }
 
 .navbar-dark .dropdown-item {
-    color: #ffffff; /* Белый текст */
-    font-weight: 500; /* Средняя жирность */
-    padding: 10px 20px; /* Увеличенные отступы */
-    opacity: 1; /* Полная видимость */
+    color: #ffffff;
+    font-weight: 500;
+    padding: 10px 20px;
 }
 
 .navbar-dark .dropdown-item:hover {
-    background-color: #444444; /* Лёгкий серый фон */
-    color: #ff5e00; /* Яркий оранжевый */
+    background-color: #444444;
+    color: #ff5e00;
 }
 
-/* Стили для заголовка в шапке */
 .header-title {
-    /* background-color: rgba(44, 44, 44, 0.7); Чёткий тёмный фон */
-    border-radius: 10px; /* Скругление углов */
-    padding: 1.5rem; /* Внутренние отступы */
-    transition: transform 0.3s ease; /* Плавный подъем */
+    border-radius: 10px;
+    padding: 1.5rem;
+    transition: transform 0.3s ease;
 }
 
 .header-title:hover {
-    transform: translateY(-5px); /* Подъем при наведении */
-    /* box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); Лёгкая тень */
+    transform: translateY(-5px);
 }
 
 .header-title h1 {
-    font-size: 2.5rem; /* Размер шрифта */
-    font-weight: 700; /* Жирность */
-    margin: 0; /* Убираем отступы */
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin: 0;
 }
 
 .header-title-animated {
-    animation: slideUp 1s ease-out forwards; /* Анимация появления */
+    animation: slideUp 1s ease-out forwards;
 }
 
 @keyframes slideUp {
@@ -237,63 +242,74 @@ textarea.form-control {
 /* ==========================================================================
    СЕКЦИЯ 6: СТИЛИ ДЛЯ УВЕДОМЛЕНИЙ
    ========================================================================== */
-/* Уведомление об успехе */
 .alert-success {
-    background-color: #d4edda; /* Зелёный фон */
-    color: #155724; /* Тёмно-зелёный текст */
-    padding: 10px; /* Внутренние отступы */
-    margin-bottom: 15px; /* Отступ снизу */
+    background-color: rgba(40, 167, 69, 0.9);
+    color: #ffffff;
+    padding: 10px 20px;
+    margin-bottom: 15px;
+    border-radius: 4px;
+    border: 1px solid #28a745;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
 }
 
-/* Уведомление об ошибке */
 .alert-danger {
-    background-color: #f8d7da; /* Красный фон */
-    color: #721c24; /* Тёмно-красный текст */
-    padding: 10px; /* Внутренние отступы */
-    margin-bottom: 15px; /* Отступ снизу */
+    background-color: rgba(220, 53, 69, 0.9);
+    color: #ffffff;
+    padding: 10px 20px;
+    margin-bottom: 15px;
+    border-radius: 4px;
+    border: 1px solid #dc3545;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+}
+
+.alert .btn-close {
+    filter: invert(1);
+    opacity: 0.8;
+}
+
+.alert .btn-close:hover {
+    opacity: 1;
 }
 
 /* ==========================================================================
    СЕКЦИЯ 7: СТИЛИ ДЛЯ ПАГИНАЦИИ
    ========================================================================== */
 .pagination .page-link {
-    background-color: #2c2c2c; /* Тёмный фон */
-    color: #ffffff; /* Белый текст */
-    border: 1px solid #444; /* Граница */
+    background-color: #2c2c2c;
+    color: #ffffff;
+    border: 1px solid #444;
 }
 
 .pagination .page-item.active .page-link {
-    background-color: #007bff; /* Синий фон для активной страницы */
-    border-color: #007bff; /* Синяя граница */
+    background-color: #007bff;
+    border-color: #007bff;
 }
 
 /* ==========================================================================
    СЕКЦИЯ 8: СТИЛИ ДЛЯ ПЛЕЕРА И МУЗЫКИ
    ========================================================================== */
-/* Контейнер плеера */
 .music-player-container .track {
-    width: 100px; /* Ширина трека */
+    width: 100px;
 }
 
-/* Обложка альбома */
 .album-cover {
-    position: relative; /* Для позиционирования */
-    width: 100px; /* Ширина */
-    height: 100px; /* Высота */
-    border-radius: 50%; /* Круглая форма */
-    overflow: hidden; /* Скрываем переполнение */
+    position: relative;
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    overflow: hidden;
 }
 
 .album-image {
-    width: 100%; /* Полная ширина */
-    height: 100%; /* Полная высота */
-    object-fit: cover; /* Заполнение */
-    transition: transform 0.3s ease; /* Плавное вращение */
-    border-radius: 50%; /* Круглая форма */
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+    border-radius: 50%;
 }
 
 .album-cover.playing .album-image {
-    animation: spin 4s linear infinite; /* Вращение при воспроизведении */
+    animation: spin 4s linear infinite;
 }
 
 @keyframes spin {
@@ -301,326 +317,324 @@ textarea.form-control {
     to { transform: rotate(360deg); }
 }
 
-/* Кнопка воспроизведения */
 .play-button {
-    background: rgba(0, 0, 0, 0.5); /* Полупрозрачный фон */
-    border: none; /* Убираем границу */
-    border-radius: 50%; /* Круглая форма */
-    width: 40px; /* Ширина */
-    height: 40px; /* Высота */
-    display: flex; /* Гибкое выравнивание */
-    align-items: center; /* Центрирование по вертикали */
-    justify-content: center; /* Центрирование по горизонтали */
-    cursor: pointer; /* Курсор указывает на кликабельность */
+    background: rgba(0, 0, 0, 0.5);
+    border: none;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
 }
 
 .play-button:hover {
-    background: rgba(0, 0, 0, 0.7); /* Усиление фона при наведении */
+    background: rgba(0, 0, 0, 0.7);
 }
 
-/* Основной плеер */
 .audio-player {
-    background-color: #343a40; /* Тёмный фон */
-    padding: 10px; /* Внутренние отступы */
-    position: fixed; /* Фиксированное положение */
-    bottom: 0; /* Снизу */
-    width: 100%; /* Полная ширина */
-    z-index: 1000; /* Выше всего контента */
+    background-color: #343a40;
+    padding: 10px;
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    z-index: 1000;
 }
 
 .audio-player .play-pause-btn {
-    background: none; /* Прозрачный фон */
-    border: none; /* Убираем границу */
-    cursor: pointer; /* Курсор для клика */
+    background: none;
+    border: none;
+    cursor: pointer;
 }
 
 .audio-player .form-range {
-    height: 5px; /* Высота ползунка */
-    background: #6c757d; /* Серый фон */
-    border-radius: 5px; /* Скругление */
+    height: 5px;
+    background: #6c757d;
+    border-radius: 5px;
 }
 
 .audio-player .form-range::-webkit-slider-thumb {
-    background: #007bff; /* Синий ползунок */
-    cursor: pointer; /* Курсор */
+    background: #007bff;
+    cursor: pointer;
 }
 
 .audio-player .form-range::-moz-range-thumb {
-    background: #007bff; /* Синий ползунок для Firefox */
-    cursor: pointer; /* Курсор */
+    background: #007bff;
+    cursor: pointer;
 }
 
 .audio-player .btn-link {
-    color: #fff; /* Белый цвет ссылки */
-    text-decoration: none; /* Убираем подчёркивание */
+    color: #fff;
+    text-decoration: none;
 }
 
 .audio-player .btn-link:hover {
-    color: #007bff; /* Синий при наведении */
+    color: #007bff;
 }
 
-/* Прогресс-бар */
 #progress {
-    width: 100%; /* Полная ширина */
-    height: 5px; /* Высота */
-    background: transparent; /* Прозрачный фон */
-    border-radius: 5px; /* Скругление */
-    outline: none; /* Убираем обводку */
-    appearance: none; /* Современный стандарт */
-    -webkit-appearance: none; /* Совместимость */
-    position: relative; /* Для позиционирования */
+    width: 100%;
+    height: 5px;
+    background: transparent;
+    border-radius: 5px;
+    outline: none;
+    appearance: none;
+    -webkit-appearance: none;
 }
 
 #progress::-webkit-slider-runnable-track {
-    background: transparent; /* Прозрачный фон */
+    background: transparent;
 }
 
 #progress::-moz-range-track {
-    background: transparent; /* Прозрачный фон */
+    background: transparent;
 }
 
 #progress::-webkit-slider-thumb {
-    -webkit-appearance: none; /* Убираем стандартный вид */
-    width: 12px; /* Ширина ползунка */
-    height: 12px; /* Высота ползунка */
-    background: #1DB954; /* Зелёный цвет */
-    border-radius: 50%; /* Круглая форма */
-    cursor: pointer; /* Курсор */
+    -webkit-appearance: none;
+    width: 12px;
+    height: 12px;
+    background: #1DB954;
+    border-radius: 50%;
+    cursor: pointer;
 }
 
 #progress::-moz-range-thumb {
-    width: 12px; /* Ширина ползунка */
-    height: 12px; /* Высота ползунка */
-    background: #1DB954; /* Зелёный цвет */
-    border-radius: 50%; /* Круглая форма */
-    cursor: pointer; /* Курсор */
+    width: 12px;
+    height: 12px;
+    background: #1DB954;
+    border-radius: 50%;
+    cursor: pointer;
 }
 
 .track-title {
-    font-size: 0.9rem; /* Размер шрифта */
-    color: #ffffff; /* Белый текст */
-    white-space: nowrap; /* Не переносим текст */
-    overflow: hidden; /* Скрываем переполнение */
-    text-overflow: ellipsis; /* Многоточие при обрезке */
-    max-width: 100px; /* Ограничение ширины */
+    font-size: 0.9rem;
+    color: #ffffff;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100px;
 }
 
 /* ==========================================================================
    СЕКЦИЯ 9: СТИЛИ ДЛЯ КНОПОК
    ========================================================================== */
-/* Основная кнопка */
 .btn-primary {
-    background-color: #ff5733; /* Оранжевый фон */
-    border-color: #ff5733; /* Оранжевая граница */
-    color: #ffffff; /* Белый текст */
+    background-color: #ff6600;
+    border-color: #ff6600;
+    color: #ffffff;
+    padding: 12px;
+    font-weight: 500;
+    width: 100%;
+    font-size: 1rem;
+    transition: background-color 0.3s ease;
 }
 
 .btn-primary:hover {
-    background-color: #cc4500; /* Углублённый оранжевый */
-    border-color: #cc4500; /* Углублённая граница */
+    background-color: #e65c00;
+    border-color: #e65c00;
 }
 
-/* Вторичная кнопка */
 .btn-secondary {
-    background-color: #28a745; /* Зелёный фон */
-    border-color: #28a745; /* Зелёная граница */
-    color: #ffffff; /* Белый текст */
+    background-color: #28a745;
+    border-color: #28a745;
+    color: #ffffff;
 }
 
 .btn-secondary:hover {
-    background-color: #218838; /* Углублённый зелёный */
-    border-color: #218838; /* Углублённая граница */
+    background-color: #218838;
+    border-color: #218838;
 }
 
-/* Кнопка закрытия белого цвета */
-.btn-close-white {
-    background-color: transparent; /* Прозрачный фон */
-    filter: invert(1); /* Инверсия цвета для белого */
+.btn-danger {
+    background-color: #dc3545;
+    border-color: #dc3545;
+    color: #ffffff;
+    padding: 8px 16px;
+    font-size: 0.9rem;
+    transition: background-color 0.3s ease;
 }
 
-.btn-close-white:hover {
-    filter: invert(0.7); /* Лёгкое затемнение при наведении */
+.btn-danger:hover {
+    background-color: #c82333;
+    border-color: #c82333;
+}
+
+.follow-btn {
+    padding: 8px 16px;
+    font-size: 0.9rem;
+    border-radius: 4px;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.follow-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
 }
 
 /* ==========================================================================
    СЕКЦИЯ 10: СТИЛИ ДЛЯ МОДАЛЬНЫХ ОКОН
    ========================================================================== */
+.modal {
+    z-index: 1050 !important;
+}
+
+.modal-backdrop {
+    z-index: 1040 !important;
+}
+
+.modal-dialog {
+    max-width: 600px;
+}
+
+.modal-content {
+    background-color: rgba(26, 26, 26, 0.95);
+    color: #ffffff;
+    border: 1px solid #333;
+    border-radius: 8px;
+}
+
+.modal-header {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    background-color: #1c1c1c;
+}
+
+.modal-footer {
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    background-color: #1c1c1c;
+}
+
+.modal-title {
+    color: #ffffff;
+}
+
 .modal-body {
-    white-space: pre-wrap; /* Сохранение переносов строк */
+    max-height: 70vh;
+    overflow-y: auto;
+    padding: 20px;
+    white-space: pre-wrap;
+}
+
+.modal-body .form-control {
+    background-color: rgba(204, 204, 204, 0.3);
+    color: #ffffff;
+    border: 1px solid #444;
+    border-radius: 4px;
+}
+
+.modal-body .form-control:focus {
+    border-color: #ff6600;
+    box-shadow: 0 0 5px rgba(255, 102, 0, 0.5);
+    outline: none;
+}
+
+.modal-body label {
+    font-size: 0.9rem;
+    margin-bottom: 0.25rem;
+}
+
+@media (max-width: 576px) {
+    .modal-dialog {
+        margin: 0;
+        width: 100%;
+        max-width: none;
+        height: 100vh;
+    }
+    .modal-content {
+        height: 100%;
+        border-radius: 0;
+    }
+    .modal-body {
+        max-height: none;
+        overflow-y: auto;
+    }
+}
+
+.confirm-modal .modal-dialog {
+    max-width: 400px;
 }
 
 /* ==========================================================================
-   СЕКЦИЯ 11: СТИЛИ ДЛЯ КОЛЛАПСА (СВОРАЧИВАЕМОГО КОНТЕНТА)
+   СЕКЦИЯ 11: СТИЛИ ДЛЯ КОЛЛАПСА
    ========================================================================== */
 .collapse {
-    margin-top: 10px; /* Отступ сверху */
+    margin-top: 10px;
 }
-
 
 /* ==========================================================================
-   СЕКЦИЯ 12: СТИЛИ ДЛЯ ФОРМЫ РЕГИСТРАЦИИ
+   СЕКЦИЯ 12: СТИЛИ ДЛЯ ТРЕКОВ И КОММЕНТАРИЕВ
    ========================================================================== */
-
-/* Контейнер формы регистрации с центрированием */
-.form-container {
-    max-width: 450px; /* Максимальная ширина контейнера формы */
-    margin: 0 auto; /* Центрирование по горизонтали */
-    padding: 25px; /* Внутренние отступы для контента */
-    background-color: transparent !important; /* Прозрачный фон */
-    border-radius: 8px; /* Скругление углов для эстетики */
-    box-shadow: none !important; /* Без тени */
-}
-
-/* Стили для меток полей формы */
-.form-label {
-    font-weight: 500; /* Средняя жирность шрифта для чёткости */
-    color: #ffffff; /* Белый цвет текста для контраста */
-    margin-bottom: 8px; /* Отступ снизу для разделения от поля ввода */
-}
-
-/* Стили для полей ввода формы */
-.form-control {
-    background-color: #8a8a8a; /* Тёмный фон поля ввода */
-    border: 1px solid #555; /* Серая граница для мягкого контраста */
-    color: #ffffff; /* Белый текст для читаемости */
-    padding: 10px; /* Внутренние отступы для удобства ввода */
-    border-radius: 5px; /* Скругление углов поля */
-    transition: border-color 0.3s ease; /* Плавная анимация изменения цвета границы */
-    width: 100%; /* Зафиксированная ширина поля */
-    box-sizing: border-box; /* Учитываем padding и border в ширине */
-}
-
-/* Стили для поля ввода при фокусе */
-.form-control:focus {
-    border-color: #ff5733; /* Оранжевая граница при фокусе */
-    box-shadow: 0 0 5px rgba(255, 87, 51, 0.5); /* Лёгкое свечение для акцента */
-    outline: none; /* Убираем стандартную обводку браузера */
-}
-
-/* Контейнер для группировки поля ввода и спиннера */
-.input-group {
-    position: relative; /* Относительное позиционирование для дочерних элементов */
-    display: flex; /* Гибкое выравнивание для содержимого */
-    align-items: center; /* Вертикальное центрирование элементов */
-    width: 100%; /* Зафиксированная ширина контейнера */
-    min-height: 40px; /* Минимальная высота для стабильности макета */
-}
-
-/* Стили для спиннера (индикатора загрузки) */
-.spinner {
-    width: 20px; /* Ширина спиннера */
-    height: 20px; /* Высота спиннера */
-    border: 3px solid #555; /* Серая граница спиннера */
-    border-top: 3px solid #ff5733; /* Оранжевая верхняя часть для анимации вращения */
-    border-radius: 50%; /* Круглая форма спиннера */
-    margin-left: 10px; /* Отступ слева от поля ввода */
-    flex-shrink: 0; /* Спиннер не сжимается */
-}
-
-/* Активное состояние спиннера */
-.spinner-active {
-    display: inline-block; /* Показываем спиннер при активации */
-    animation: spin 1s linear infinite; /* Запускаем бесконечную анимацию вращения */
-}
-
-/* Стили для сообщений валидации */
-.validation-message {
-    font-size: 0.85rem; /* Мелкий шрифт для компактности */
-    margin-top: 5px; /* Отступ сверху от поля ввода */
-    min-height: 24px; /* Увеличенная минимальная высота для предотвращения скачков */
-    line-height: 24px; /* Фиксированная высота строки */
-    overflow: hidden; /* Скрываем текст, выходящий за пределы */
-    color: #ffffff; /* Белый цвет текста для видимости */
-}
-
-/* Стили для успешных сообщений валидации */
-.text-success {
-    color: #28a745; /* Зелёный цвет для успешной валидации */
-}
-
-/* Стили для сообщений об ошибках валидации */
-.text-danger {
-    color: #dc3545; /* Красный цвет для ошибок валидации */
-}
-
-/* Стили для основной кнопки (регистрация) */
-.btn-primary {
-    background-color: #ff5733; /* Оранжевый фон кнопки */
-    border-color: #ff5733; /* Оранжевая граница */
-    padding: 10px; /* Внутренние отступы для удобства нажатия */
-    font-weight: 500; /* Средняя жирность текста для чёткости */
-    transition: background-color 0.3s ease; /* Плавная анимация изменения фона */
-}
-
-/* Стили для основной кнопки при наведении */
-.btn-primary:hover {
-    background-color: #e04b2d; /* Более тёмный оранжевый при наведении */
-    border-color: #e04b2d; /* Соответствующая граница */
-}
-
-/* Контейнер для уведомлений */
-.alert-container {
-    max-width: 450px; /* Ограничение ширины для соответствия форме */
-    margin: 0 auto 20px; /* Центрирование и отступ снизу */
-}
-
-/* Стили для уведомлений */
-.alert {
-    padding: 10px; /* Внутренние отступы для текста */
-    border-radius: 5px; /* Скругление углов уведомления */
-    font-size: 0.9rem; /* Мелкий шрифт для компактности */
-}
-
-/* Стили для уведомлений об успехе */
-.alert-success {
-    background-color: #d4edda; /* Зелёный фон для успешных уведомлений */
-    color: #155724; /* Тёмно-зелёный текст для контраста */
-}
-
-/* Стили для уведомлений об ошибке */
-.alert-danger {
-    background-color: #f8d7da; /* Красный фон для ошибок */
-    color: #721c24; /* Тёмно-красный текст для контраста */
-}
-
-/* Анимация вращения для спиннера */
-@keyframes spin {
-    from { transform: rotate(0deg); } /* Начальное положение (0 градусов) */
-    to { transform: rotate(360deg); } /* Конечное положение (полный оборот) */
-}
-
-/* Стили для заголовка (без фона и тени) */
-.header-title {
-    font-size: 1.5rem; /* Уменьшенный размер шрифта */
-    font-weight: normal; /* Обычный вес */
-    color: #ffffff; /* Цвет текста */
-    text-align: center; /* Центрирование */
-    margin-bottom: 1rem; /* Отступ снизу */
-    background-color: transparent !important; /* Без фона */
-    box-shadow: none !important; /* Без тени */
-    padding: 0; /* Без внутренних отступов */
-}
-
-.header-title-animated {
-    animation: none !important; /* Без анимации */
-}
-/* ==========================================================================
-   СЕКЦИЯ 12: ДОПОЛНИТЕЛЬНЫЕ СТИЛИ ДЛЯ ТРЕКОВ И КОММЕНТАРИЕВ
-   ========================================================================== */
-
-/* Стили для изображения обложки альбома в блоке трека */
 .track .album-image {
-    max-width: 110px; /* Ограничивает максимальную ширину изображения до 110 пикселей (увеличение на 10% относительно базового размера) */
-    max-height: 110px; /* Ограничивает максимальную высоту изображения до 110 пикселей для сохранения пропорций */
-    background: rgba(44, 44, 44, 0.3); /* Устанавливает полупрозрачный тёмно-серый фон для визуального выделения */
-    border-radius: 5px; /* Скругляет углы изображения на 5 пикселей для мягкого и современного вида */
+    max-width: 110px;
+    max-height: 110px;
+    background: rgba(44, 44, 44, 0.3);
+    border-radius: 5px;
 }
 
-/* Стили для изображений в комментариях */
 .comment img {
-    max-width: 110px; /* Ограничивает максимальную ширину изображения в комментариях до 110 пикселей */
-    background: rgba(44, 44, 44, 0.3); /* Применяет полупрозрачный тёмно-серый фон для консистентности с дизайном треков */
-    border-radius: 5px; /* Добавляет скругление углов на 5 пикселей для единообразия с другими элементами */
+    max-width: 110px;
+    background: rgba(44, 44, 44, 0.3);
+    border-radius: 5px;
 }
 
+/* ==========================================================================
+   СЕКЦИЯ 13: СТИЛИ ДЛЯ МЕНЮ ПОДПИСОК
+   ========================================================================== */
+.following-list {
+    max-height: 200px;
+    overflow-y: auto;
+    padding: 10px;
+    background-color: rgba(0, 0, 0, 0.7);
+    border-radius: 4px;
+    margin-top: 10px;
+}
 
+.following-list li {
+    padding: 5px 10px;
+    font-size: 0.9rem;
+    color: #ffffff;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.following-list li:last-child {
+    border-bottom: none;
+}
+
+.following-list li:hover {
+    background-color: rgba(255, 102, 0, 0.2);
+    color: #ff6600;
+}
+
+.profile-list {
+    list-style: none;
+    padding: 0;
+}
+
+.profile-list li {
+    padding: 5px 10px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    font-size: 0.9rem;
+}
+
+.profile-list li:last-child {
+    border-bottom: none;
+}
+
+.profile-list li a {
+    color: #ffffff;
+    text-decoration: none;
+}
+
+.profile-list li a:hover {
+    color: #ff6600;
+}
+
+/* Явное скрытие dropdown-menu */
+.dropdown-menu {
+    display: none !important;
+}
+.dropdown-menu.show {
+    display: block !important;
+}

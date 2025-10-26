@@ -165,8 +165,13 @@ document.addEventListener('DOMContentLoaded', () => {
         tracks[prevIndex].querySelector('.play-button').click();
     };
 
-    // Поддержка клавиш
+    // Поддержка клавиш (игнорировать, если модал открыт)
     document.addEventListener('keydown', (e) => {
+        if (document.body.classList.contains('modal-open')) {
+            console.log('Keydown ignored because modal is open');
+            return; // Игнорировать клавиши, если модал открыт
+        }
+
         if (e.code === 'Space' && document.activeElement.tagName !== 'INPUT') {
             e.preventDefault();
             playPauseBtn.click();

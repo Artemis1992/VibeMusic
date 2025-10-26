@@ -3,12 +3,11 @@ from django.db import models
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.utils import timezone
-from django.utils.text import slugify
-from vibemusic.utils import extract_metadata
+from django.utils.text import slugify                                   # только маленькие буквы, цифры, дефисы и без пробелов
+from vibemusic.utils import extract_metadata, UniqueSlugGenerator
 from vibemusic.spotify_utils import search_track, download_image
 import logging
-import uuid
-import os
+
 
 logger = logging.getLogger(__name__)
 
@@ -19,6 +18,8 @@ class Activity(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
+        verbose_name = "Активность"
+        verbose_name_plural = "Активности"
         ordering = ['-created_at']
 
     def __str__(self):
@@ -34,8 +35,8 @@ class Profile(models.Model):
     following = models.ManyToManyField('self', symmetrical=False, related_name='followers', blank=True, verbose_name="Подписки")        # Пользователи, на которых подписан профиль
 
     class Meta:
-        verbose_name = "Аватарка"
-        verbose_name_plural = "Аватарки"
+        verbose_name = "Профиль"
+        verbose_name_plural = "Профили"
 
     def __str__(self):
         return f"Профиль пользователя{self.user.username}"
@@ -52,6 +53,10 @@ class SiteSettings(models.Model):
     def __str__(self):
         return "Настройки сайта"
 
+    @classmethod
+    def get_solo(cls):
+        obj, created = cls.objects.get_or_create(pk=1)
+        return obj
 
 
 class Genre(models.Model):
@@ -65,15 +70,10 @@ class Genre(models.Model):
     class Meta:
         verbose_name = "Жанр"
         verbose_name_plural = "Жанры"
+        ordering = ['name']               # Сортировка по алфавиту
 
     def save(self, *args, **kwargs):
-        if not self.slug:
-            base_slug = slugify(self.name, allow_unicode=True)
-            self.slug = base_slug
-            counter = 1
-            while Genre.objects.filter(slug=self.slug).exclude(id=self.id).exists():
-                self.slug = f"{base_slug}-{counter}"
-                counter += 1
+        UniqueSlugGenerator(self, 'slug', 'name').generate()    # Генерируем slug на основе поля name
         super().save(*args, **kwargs)
 
     def __str__(self):
@@ -92,17 +92,12 @@ class Artist(models.Model):
     class Meta:
         verbose_name = "Исполнитель"
         verbose_name_plural = "Исполнители"
+        ordering = ['name']
 
     def save(self, *args, **kwargs):
-        if not self.slug:
-            base_slug = slugify(self.name, allow_unicode=True)
-            self.slug = base_slug
-            counter = 1
-            while Artist.objects.filter(slug=self.slug).exclude(id=self.id).exists():
-                self.slug = f"{base_slug}-{counter}"
-                counter += 1
+        UniqueSlugGenerator(self, 'slug', 'name').generate()  # Генерируем slug на основе поля name
         super().save(*args, **kwargs)
-
+        
     def __str__(self):
         return self.name
 
@@ -134,44 +129,47 @@ class Track(models.Model):
     class Meta:
         verbose_name = "Трек"
         verbose_name_plural = "Треки"
+        ordering = ['-created_at']
 
     def save(self, *args, **kwargs):                                                    # Переопределяет метод save модели для кастомной логики перед сохранением
                                                                                         # Извлечение метаданных из аудиофайла
         if self.audio_file and not self.album_image:                                    # Проверяет наличие аудиофайла и отсутствие обложки альбома
             logger.debug(f"Извлечение метаданных для трека: {self.title}")                                    
             metadata = extract_metadata(self.audio_file)                                # Извлекает метаданные из аудиофайла с помощью функции extract_metadata
-            self.title = self.title or metadata['title']                                # Обновляет название трека метаданными, если поле пустое
-            self.album_name = self.album_name or metadata['album']                      # Обновляет название альбома метаданными, если поле пустое
-            if metadata['artist'] and not self.artist:                                  # Проверяет наличие исполнителя в метаданных и отсутствие в модели
-                artist, _ = Artist.objects.get_or_create(                               # Получает или создаёт объект Artist по имени
-                    name=metadata['artist'],                                            # Устанавливает имя исполнителя из метаданных
-                    defaults={'slug': slugify(metadata['artist'], allow_unicode=True)}  # Генерирует slug по умолчанию с поддержкой unicode
+            self.title = self.title or metadata.get('title', '')                                # С помощью (get() безопасно) Обновляем название трека метаданными, если поле пустое
+            self.album_name = self.album_name or metadata.get('album', '')                      # Обновляет название альбома метаданными, если поле пустое
+            if metadata.get('artist') and not self.artist:                                  # Проверяет наличие исполнителя в метаданных и отсутствие в модели
+                artist_name = metadata['artist']
+                artist, created = Artist.objects.get_or_create(                               # Получает или создаёт объект Artist по имени
+                    name=artist_name,                                            # Устанавливает имя исполнителя из метаданных
+                    defaults={'slug': slugify(artist_name, allow_unicode=True)}  # Генерирует slug по умолчанию с поддержкой unicode
                 )                                                                       # Завершает get_or_create
                 self.artist = artist                                                    # Присваивает объект Artist полю модели
-                logger.debug(f"Исполнитель установлен: {self.artist.name}")
+                logger.debug(f"Автоматически создан/найден исполнитель: {artist.name}")
             
                                                                                         # Поиск обложек в Spotify
             # Поиск обложки в Spotify
-            if metadata['title'] and metadata['artist']:                                    # Проверяет наличие названия трека и имени исполнителя в метаданных
+            if metadata.get('title') and metadata.get('artist'):                                    # Проверяет наличие названия трека и имени исполнителя в метаданных
                 logger.debug(f"Поиск в Spotify: {metadata['title']} - {metadata['artist']}") # Логирует попытку поиска трека в Spotify по названию и исполнителю
                 try:                                                                        # Пытается выполнить запрос к Spotify API
                     spotify_data = search_track(metadata['title'], metadata['artist'])      # Ищет трек в Spotify по метаданным
-                    if spotify_data and spotify_data['album_image_url']:                    # Если найдено и есть URL обложки альбома
-                        filename = f"{self.artist.slug}_{self.album_name or 'unknown'}_{self.title}.jpg" # Формирует имя файла для сохранения обложки
+                    if spotify_data and spotify_data.get('album_image_url'):                    # Если найдено и есть URL обложки альбома
+                        filename = f"{slugify(self.artist.slug) if self.artist else 'unknown'}_{slugify(self.title)}.jpg" # Формирует имя файла для сохранения обложки
                         image_path = download_image(spotify_data['album_image_url'], filename) # Скачивает изображение по ссылке
                         if image_path:                                                      # Если скачивание прошло успешно
                             self.album_image = image_path                                   # Сохраняет путь к обложке в модель
-                            self.album_name = self.album_name or spotify_data['album_name'] # Устанавливает название альбома, если поле пустое
-                            logger.debug(f"Обложка сохранена: {image_path}")                # Логирует успешное сохранение обложки
+                            self.album_name = self.album_name or spotify_data.get('album_name', '') # Устанавливает название альбома, если поле пустое
+                            logger.debug(f"Обложка из Spotify сохранена: {image_path}")                # Логирует успешное сохранение обложки
                         else:                                                               # Если не удалось скачать изображение
-                            self.album_image = settings.DEFAULT_ALBUM_IMAGE                 # Устанавливает дефолтную обложку
+                            self.album_image = getattr(settings, 'DEFAULT_ALBUM_IMAGE', None)           # Получает дефолтное изображение альбома из настроек, если не указано, присваивает None
                             logger.warning(f"Трек не найден в Spotify, используется дефолт: {self.album_image}") # Логирует предупреждение
                     else:                                                                   # Если трек не найден или нет обложки
-                        self.album_image = settings.DEFAULT_ALBUM_IMAGE                     # Устанавливает дефолтную обложку
+                        self.album_image = getattr(settings, 'DEFAULT_ALBUM_IMAGE', None)                     # Устанавливает дефолтную обложку
                         logger.warning(f"Трек не найден в Spotify, используется дефолт: {self.album_image}") # Логирует предупреждение
                 except Exception as e:                                                      # Обрабатывает любые ошибки при работе с API
-                    self.album_image = settings.DEFAULT_ALBUM_IMAGE                         # Устанавливает дефолтную обложку
-                    logger.error(f"Ошибка Spotify API: {e}, используется дефолт: {self.album_image}") # Логирует ошибку с описанием
+                    logger.error(f"Ошибка при поиске в Spotify: {e}")                       # Логирует ошибку с описанием
+                    self.album_image = getattr(settings, 'DEFAULT_ALBUM_IMAGE', None)                         # Устанавливает дефолтную обложку
+                    
 
             super().save(*args, **kwargs)                                                    # Вызывает оригинальный метод save для сохранения объекта
                     
@@ -189,7 +187,7 @@ class Post(models.Model):
     content = models.TextField(verbose_name="Содержимое поста")                                                                             # Связь с Контентом без ограничение на символы.
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата создания")                                                      # Cохраняет дату/время, когда объект был создан. auto_now_add=True Устанавливается один раз автоматически.
     updated_at = models.DateTimeField(auto_now=True, verbose_name="Дата обновления")                                                        # Обнавляем дату/время, когда обьект был перезаписан. auto_now=True Позволяет обновлять при каждом изменение
-    images = models.ManyToManyField(PostImage, blank=True, related_name='posts', verbose_name="Фотографии")                                 # Связь многие-ко-многим
+    images = models.ManyToManyField(PostImage, blank=True, related_name='posts', verbose_name="Фотографии")                                 # Связи многие-ко-многим
     tracks = models.ManyToManyField(Track, blank=True, related_name='related_posts', verbose_name="Треки")
     liked_by = models.ManyToManyField(User, through='Reaction', related_name='liked_posts', blank=True)
 
@@ -199,13 +197,7 @@ class Post(models.Model):
         ordering = ['-created_at']
 
     def save(self, *args, **kwargs):
-        if not self.slug:
-            base_slug = slugify(self.title, allow_unicode=True)
-            self.slug = base_slug
-            counter = 1
-            while Post.objects.filter(slug=self.slug).exclude(id=self.id).exists():
-                self.slug = f"{base_slug}-{counter}"
-                counter += 1
+        UniqueSlugGenerator(self, 'slug', 'title').generate()  # Генерируем slug на основе поля title
         super().save(*args, **kwargs)
 
     def __str__(self):

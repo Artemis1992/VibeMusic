@@ -1,0 +1,90 @@
+{% extends 'vibemusic/base.html' %}
+{% load static %}
+{% block content %}
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <h2>{{ title }}</h2>
+
+            <!-- Сообщения об успехе или ошибке -->
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert {% if message.tags == 'success' %}alert-success{% else %}alert-danger{% endif %} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+
+            <!-- Текущая дата и время -->
+            <p class="text-muted">Текущая дата и время: {{ current_datetime|date:"d F Y, H:i (O)" }}</p>
+
+            <!-- Аватар и Telegram -->
+            <div class="text-center mb-4">
+                <img src="{% if user_profile.photo %}{{ user_profile.photo.url }}{% else %}{% static 'vibemusic/images/default-avatar.png' %}{% endif %}" 
+                     alt="Аватар" class="rounded-circle" style="width: 120px; height: 120px; object-fit: cover;">
+                {% if user_profile.telegram_username %}
+                    <p class="text-muted mt-2">Telegram: @{{ user_profile.telegram_username }}</p>
+                {% endif %}
+            </div>
+
+            <!-- Форма редактирования профиля -->
+            <h3 class="mt-4">Редактировать профиль</h3>
+            <form method="post" enctype="multipart/form-data" class="needs-validation" novalidate>
+                {% csrf_token %}
+                <input type="hidden" name="action" value="edit_profile">
+                {% for field in edit_form %}
+                    <div class="mb-3 {% if field.errors %}has-error{% endif %}">
+                        <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+                        {{ field }}
+                        {% if field.errors %}
+                            <div class="text-danger">{{ field.errors }}</div>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+                <button type="submit" class="btn btn-primary">Сохранить</button>
+            </form>
+
+            <!-- Подписки -->
+            <h3 class="mt-4">Подписки</h3>
+            {% if following %}
+                <ul class="list-unstyled">
+                    {% for follow in following %}
+                        <li class="mb-2">
+                            <a href="{% url 'vibemusic:profile' follow.user.id %}" class="text-decoration-none">
+                                {{ follow.user.username }}
+                            </a>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p class="text-muted">Нет подписок.</p>
+            {% endif %}
+
+            <!-- Ваши посты -->
+            <h3 class="mt-4">Ваши посты</h3>
+            <a href="{% url 'vibemusic:add_post' %}" class="btn btn-primary mb-3">Добавить пост</a>
+            {% if user_posts %}
+                <ul class="list-unstyled">
+                    {% for post in user_posts %}
+                        <li class="mb-3 d-flex justify-content-between align-items-center">
+                            <a href="{% url 'vibemusic:post_detail' post.slug %}" class="text-decoration-none">
+                                {{ post.title }}
+                            </a>
+                            <form method="post" action="" style="display:inline;" onsubmit="return confirm('Вы уверены, что хотите удалить пост?');">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="delete_post">
+                                <input type="hidden" name="post_id" value="{{ post.id }}">
+                                <button type="submit" class="btn btn-danger btn-sm ms-2">Удалить</button>
+                            </form>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p class="text-muted">Нет постов.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+<script src="{% static 'vibemusic/js/valid_form.js' %}"></script>
+{% endblock %}

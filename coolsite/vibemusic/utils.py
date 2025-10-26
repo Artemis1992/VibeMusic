@@ -1,4 +1,4 @@
-# util.py
+# utils.py
 from django.db.models import *
 from django.utils.text import slugify
 from django.core.signing import TimestampSigner
@@ -15,15 +15,16 @@ from mutagen.id3 import ID3
 import logging
 import requests
 
+from django.utils import timezone  # Добавлено для current_datetime
 
 
 logger = logging.getLogger(__name__)
 signer = TimestampSigner()                                    # Использует SECRET_KEY для подписи      
 
 menu = [
-    {"title": "Главная", "url_name": "home"},
-    {"title": "О сайте", "url_name": "about"},
-    {"title": "Обратная связь", "url_name": "contact"},
+    {"title": "Главная", "url_name": "vibemusic:home"},
+    {"title": "О сайте", "url_name": "vibemusic:about"},
+    {"title": "Обратная связь", "url_name": "vibemusic:contact"},
 ]
 
 class DataMixin:
@@ -77,8 +78,36 @@ class ProfileContextMixin:
             context['following'] = profile.following.all()                                          # Добавляем подписки, если есть M2M поле
         return context                                                                              # Возвращаем обновлённый контекст
 
+class UniqueSlugGenerator:
+    """Класс для генерации уникальных slug'ов для моделей Django."""
 
-
+    def __init__(self, model_instance: Model, slug_field: str, source_field: str):              # Инициализация класса с аргументами и анатациями типов,
+        """
+        Инициализация генератора slug'ов.
+        
+        Args:
+            model_instance: Экземпляр модели Django.
+            slug_field: Название поля, в котором будет храниться slug.
+            source_field: Название поля, из которого генерируется slug.
+        """
+        self.model_instance = model_instance
+        self.slug_field = slug_field
+        self.source_field = source_field
+        self.model_class = model_instance.__class__
+    
+    def generate(self) -> None:
+        """
+        Генерирует уникальный slug и устанавливает его в указанное поле модели.
+        Если slug уже существует, добавляет числовой суффикс.
+        """
+        if not getattr(self.model_instance, self.slug_field):
+            base_slug = slugify(getattr(self.model_instance, self.slug_field), allow_unicode=True)
+            slug = base_slug
+            counter = 1
+            while self.model_class.objects.filter(**{self.slug_field: slug}).exclude(pk=self.model_instance.pk).exists():
+                slug = f"{base_slug}-{counter}"
+                counter += 1
+            setattr(self.model_instance, self.slug_field, slug)
 
 # функцию для извлечения метаданных(работа со Spotyfi)
 # ------------------------------------------------------------------------------------------------------------------------------
@@ -139,3 +168,6 @@ def send_telegram_message(chat_id, text, parse_mode='Markdown'):
         return False
 
 # ----------------------------------------------------------------------------------------------------------------------------
+
+
+

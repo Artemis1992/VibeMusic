@@ -1,3 +1,4 @@
+// control_of_likes.js
 document.addEventListener('DOMContentLoaded', function() {
     // Лайки постов
     document.querySelectorAll('.like-post-btn').forEach(button => {
