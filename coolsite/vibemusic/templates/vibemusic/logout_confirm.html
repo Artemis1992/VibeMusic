@@ -1,0 +1,22 @@
+<!-- vibemusic/templates/vibemusic/logout_confirm.html -->
+{% extends 'vibemusic/base.html' %}
+{% block content %}
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-6 offset-md-3 text-center">
+            <h2>Подтверждение выхода</h2>
+            <p>Вы уверены, что хотите выйти?</p>
+            <form method="post">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-danger">Выйти</button>
+                <a href="{% url 'vibemusic:home' %}" class="btn btn-secondary ms-2">Отмена</a>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block extra_head %}
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+{% endblock %}

@@ -7,6 +7,7 @@ from django.utils.http import urlsafe_base64_encode
 from django.utils.encoding import force_bytes
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.decorators.http import require_POST
+from django.http import HttpResponseRedirect
 from django.contrib.auth.views import (
     PasswordResetView, PasswordResetDoneView, PasswordResetConfirmView, PasswordResetCompleteView,
     LoginView,
@@ -390,10 +391,37 @@ class CustomPasswordResetView(PasswordResetView):
                 pass                                                           # Пропускаем, если профиль не найден
         return response                                                    # Возвращаем ответ
 
+
+
 class CustomLoginView(LoginView):
-    form_class = LoginViewForm                                                 # Указываем форму LoginViewForm
-    template_name = 'vibemusic/login.html'                                     # Задаём шаблон для входа
-    success_url = reverse_lazy('vibemusic:home')                               # Устанавливаем URL перенаправления
+    template_name = 'vibemusic/login.html'
+    redirect_authenticated_user = True
+
+    def get_success_url(self):
+        return reverse_lazy('vibemusic:home')
+
+    def form_valid(self, form):
+        """Обработка успешного входа с JSON-ответом для AJAX."""
+        response = super().form_valid(form)
+        if self.request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({
+                'success': True,
+                'redirect_url': self.get_success_url(),
+            })
+        return response
+
+    def form_invalid(self, form):
+        """Обработка ошибки входа с JSON-ответом для AJAX."""
+        if self.request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({
+                'success': False,
+                'error': 'Неверное имя пользователя или пароль.',
+                'username_error': form.errors.get('username', [''])[0] if form.errors.get('username') else '',
+                'password_error': form.errors.get('password', [''])[0] if form.errors.get('password') else '',
+            })
+        return super().form_invalid(form)
+    
+
 
 class CustomPasswordResetDoneView(PasswordResetDoneView):
     template_name = 'vibemusic/password_reset_done.html'                       # Задаём шаблон для страницы после сброса
@@ -541,7 +569,7 @@ class MyProfileView(LoginRequiredMixin, ProfileContextMixin, DataMixin, Template
             messages.error(request, "Ошибка при обновлении профиля. Проверьте введённые данные.")
         context = self.get_context_data(
             user_profile=user_profile,
-            follwing=user_profile.following.all(),
+            following=user_profile.following.all(),
             user_posts=Post.objects.filter(author=request.user),
             edit_form=edit_form,
             title="Мой профиль",
@@ -566,20 +594,46 @@ class TelegramSettingsView(LoginRequiredMixin, ProfileContextMixin, DataMixin, V
         return render(request, 'vibemusic/telegram_settings.html', context)    # Рендерим шаблон с контекстом
 
 # Новое представление для подтверждения выхода
-class LogoutConfirmView(LoginRequiredMixin, ProfileContextMixin, DataMixin, View):
-    login_url = '/login/'                                                      # Путь (URL), куда будет перенаправлён неавторизованный пользователь
-    redirect_field_name = 'redirect_to'                                        # Имя параметра для сохранения URL перенаправления
+# vibemusic/views.py
+from django.contrib.auth import logout
+from django.urls import reverse_lazy
+from django.views.generic import TemplateView
+from django.contrib.auth.mixins import LoginRequiredMixin
+from .utils import DataMixin, ProfileContextMixin
+from django.http import HttpResponseRedirect
+import logging
 
-    def get(self, request):
-        context = self.get_context_data(                                       # Получаем контекст с использованием миксинов
-            title='Подтверждение выхода'                                       # Устанавливаем заголовок страницы
-        )
-        return render(request, 'vibemusic/logout_confirm.html', context)       # Рендерим шаблон с контекстом
+logger = logging.getLogger(__name__)
+
+class LogoutConfirmView(LoginRequiredMixin, ProfileContextMixin, DataMixin, TemplateView):
+    login_url = '/login/'
+    redirect_field_name = 'redirect_to'
+    template_name = 'vibemusic/logout_confirm.html'
+
+    def dispatch(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            logger.debug("User already logged out, redirecting to home")
+            return HttpResponseRedirect(reverse_lazy('vibemusic:home'))
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context.update(self.get_context_menu(title='Подтверждение выхода'))
+        return context
 
     def post(self, request):
-        logout(request)                                                        # Выполняем выход пользователя из системы
-        return redirect('vibemusic:home')                                      # Перенаправляем на главную страницу
-
+        logger.debug(f"Logout attempt for user: {request.user.username if request.user.is_authenticated else 'anonymous'}")
+        if request.user.is_authenticated:
+            request.session.flush()  # Полная очистка сессии
+            logout(request)  # Завершение сессии
+            logger.debug(f"Logout successful for user: {request.user.username}")
+        else:
+            logger.debug("User was not authenticated during logout")
+        response = HttpResponseRedirect(reverse_lazy('vibemusic:home'))
+        response.delete_cookie('sessionid')  # Явное удаление куки сессии
+        return response
+    
+    
 @login_required
 @require_POST
 def toggle_follow(request, pk):

@@ -1,3 +1,4 @@
+/* vibemusic/static/vibemusic/css/style.css */
 /* ==========================================================================
    СЕКЦИЯ 1: СБРОС СТАНДАРТНЫХ СТИЛЕЙ
    ========================================================================== */
@@ -637,4 +638,117 @@ textarea.form-control {
 }
 .dropdown-menu.show {
     display: block !important;
+}
+
+
+.text-muted {
+    color: #fdfdfd !important; /* Синий цвет, !important повышает приоритет */
+}
+
+
+
+/* Стили для карточек и выравнивания */
+.card {
+    border: none;
+    border-radius: 10px;
+    overflow: hidden;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
+}
+
+.card p, .card h4 {
+    margin-bottom: 1rem;
+}
+
+.col-md-6 .card {
+    min-height: 700px; /* Убедимся, что карточки выровнены по высоте */
+}
+
+.input-group {
+    background-color: rgba(204, 204, 204, 0.3);
+    border: 1px solid #444;
+    border-radius: 4px;
+    padding: 5px;
+}
+
+.input-group input, .input-group textarea {
+    background: transparent;
+    border: none;
+    color: #ffffff;
+    width: 100%;
+}
+
+.input-group input:focus, .input-group textarea:focus {
+    outline: none;
+    box-shadow: none;
+}
+
+.btn-lg {
+    padding: 12px 24px;
+    font-size: 1.1rem;
+}
+
+.list-unstyled li {
+    transition: background-color 0.3s ease;
+}
+
+.list-unstyled li:hover {
+    background-color: rgba(255, 102, 0, 0.1);
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    .col-md-6 {
+        flex: 0 0 100%;
+        max-width: 100%;
+    }
+    .card {
+        margin-bottom: 20px;
+    }
+    .col-md-6 .mb-4 {
+        margin-top: 0;
+    }
+    .btn-lg {
+        width: 100%;
+        margin-bottom: 10px;
+    }
+}
+
+
+
+.spinner {
+    display: none;
+    width: 20px;
+    height: 20px;
+    border: 3px solid #fff;
+    border-top: 3px solid #ff6600;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-left: 10px;
+}
+
+.spinner-active {
+    display: inline-block;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.validation-message {
+    font-size: 0.9rem;
+    margin-top: 5px;
+}
+
+.text-success {
+    color: #28a745;
+}
+
+.text-danger {
+    color: #dc3545;
 }
