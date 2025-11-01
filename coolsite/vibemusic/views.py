@@ -31,73 +31,135 @@ logger = logging.getLogger(__name__)
 
 # Ваши существующие представления остаются без изменений
 class PostListView(DataMixin, ProfileContextMixin, ListView):
-    model = Post                                                               # Указываем модель Post для представления
-    template_name = 'vibemusic/index.html'                                     # Задаём шаблон для главной страницы
-    context_object_name = 'page_obj'                                           # Имя объекта пагинации в шаблоне
-    paginate_by = 10                                                           # Устанавливаем количество постов на страницу
+    model = Post
+    template_name = 'vibemusic/index.html'
+    context_object_name = 'page_obj'
+    paginate_by = 10
 
     def get_queryset(self):
-        queryset = Post.objects.prefetch_related('artist', 'genre', 'images', 'tracks')  # Оптимизируем запрос с подтягиванием связанных данных
-        genre_slug = self.request.GET.get('genre')                             # Получаем параметр genre из GET-запроса
-        if genre_slug:                                                         # Если жанр указан в запросе
+        queryset = Post.objects.prefetch_related('artist', 'genre', 'images', 'tracks')
+
+        # Фильтрация по жанру
+        genre_slug = self.request.GET.get('genre')
+        if genre_slug:
             try:
-                genre = Genre.objects.get(slug=genre_slug)                     # Находим жанр по slug
-                related_genre_names = genre.related_genres.values_list('name', flat=True)  # Получаем имена связанных жанров
+                genre = Genre.objects.get(slug=genre_slug)
+                related_genre_names = genre.related_genres.values_list('name', flat=True)
                 queryset = queryset.filter(
                     Q(genre=genre) |
                     Q(artist__genres=genre) |
                     Q(genre__name__in=related_genre_names) |
                     Q(artist__genres__name__in=related_genre_names)
-                ).distinct()                                                   # Фильтруем посты по жанру или связанным жанрам
+                ).distinct()
             except Genre.DoesNotExist:
-                logger.warning(f"Genre with slug {genre_slug} not found")      # Логируем, если жанр не найден
-        return queryset.order_by('-created_at')                             # Сортируем посты по дате создания (новые сверху)
+                logger.warning(f"Genre with slug {genre_slug} not found")
+
+        # Добавляем like_count и liked_by_me
+        if self.request.user.is_authenticated:
+            queryset = queryset.annotate(
+                like_count=Count('liked_by'),
+                liked_by_me=Exists(
+                    Post.objects.filter(
+                        id=OuterRef('pk'),
+                        liked_by=self.request.user
+                    )
+                )
+            )
+        else:
+            queryset = queryset.annotate(like_count=Count('liked_by'))
+
+        return queryset.order_by('-created_at')
 
     def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)                        # Получаем базовый контекст от родительских классов
-        context['genres'] = Genre.objects.all()                            # Добавляем все жанры в контекст
-        context['site_settings'] = SiteSettings.objects.first()            # Добавляем первую запись настроек сайта
-        genre_slug = self.request.GET.get('genre')                         # Получаем параметр genre из GET-запроса
-        if genre_slug:                                                     # Если жанр указан
+        context = super().get_context_data(**kwargs)
+        context['genres'] = Genre.objects.all()
+        context['site_settings'] = SiteSettings.objects.first()
+        genre_slug = self.request.GET.get('genre')
+        if genre_slug:
             try:
-                context['selected_genre'] = Genre.objects.get(slug=genre_slug)  # Добавляем выбранный жанр в контекст
+                context['selected_genre'] = Genre.objects.get(slug=genre_slug)
             except Genre.DoesNotExist:
-                context['selected_genre'] = None                           # Устанавливаем None, если жанр не найден
+                context['selected_genre'] = None
         else:
-            context['selected_genre'] = None                               # Устанавливаем None, если жанр не указан
-        extra_context = self.get_context_menu(title="Главная")              # Вызываем метод для получения меню
-        context.update(extra_context)                                      # Обновляем контекст
-        context['current_date'] = timezone.now()                           # Текущая дата и время
-        context['post_count'] = Post.objects.count()                       # Количество постов
-        return context                                                     # Возвращаем обновлённый контекст
+            context['selected_genre'] = None
+        extra_context = self.get_context_menu(title="Главная")
+        context.update(extra_context)
+        context['current_date'] = timezone.now()
+        context['post_count'] = Post.objects.count()
+        return context
+
+
 
 class PostDetailView(DataMixin, ProfileContextMixin, DetailView):
-    model = Post                                                               # Указываем модель Post для представления
-    template_name = 'vibemusic/post_detail.html'                               # Задаём шаблон для страницы поста
-    slug_url_kwarg = "post_slug"                                               # Указываем имя параметра slug в URL
-    context_object_name = 'post'                                               # Имя объекта поста в шаблоне
+    model = Post
+    template_name = 'vibemusic/post_detail.html'
+    slug_url_kwarg = "post_slug"
+    context_object_name = 'post'
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+
+        # === АННОТАЦИИ ДЛЯ ПОСТА ===
+        if self.request.user.is_authenticated:
+            queryset = queryset.annotate(
+                like_count=Count('liked_by'),
+                liked_by_me=Exists(
+                    Post.objects.filter(id=OuterRef('pk'), liked_by=self.request.user)
+                )
+            )
+        else:
+            queryset = queryset.annotate(like_count=Count('liked_by'))
+
+        # === АННОТАЦИИ ДЛЯ ТРЕКОВ ===
+        track_queryset = Track.objects.annotate(like_count=Count('liked_by'))
+        if self.request.user.is_authenticated:
+            track_queryset = track_queryset.annotate(
+                liked_by_me=Exists(
+                    Track.objects.filter(id=OuterRef('pk'), liked_by=self.request.user)
+                )
+            )
+
+        track_prefetch = Prefetch('tracks', queryset=track_queryset)
+
+        # === АННОТАЦИИ ДЛЯ КОММЕНТАРИЕВ ===
+        comment_queryset = Comment.objects.annotate(like_count=Count('liked_by'))
+        if self.request.user.is_authenticated:
+            comment_queryset = comment_queryset.annotate(
+                liked_by_me=Exists(
+                    Comment.objects.filter(id=OuterRef('pk'), liked_by=self.request.user)
+                )
+            )
+        comment_queryset = comment_queryset.prefetch_related('replies')
+        comment_prefetch = Prefetch('comments', queryset=comment_queryset)
+
+        # === ПРИМЕНЯЕМ prefetch_related ===
+        queryset = queryset.prefetch_related(track_prefetch, comment_prefetch)
+        return queryset
 
     def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)                        # Получаем базовый контекст от родительских классов
-        extra_context = self.get_context_menu(title=context['post'].title) # Получаем дополнительный контекст меню
-        comments = self.object.comments.all().order_by('-created_at')      # Получаем комментарии к посту, сортируем по дате
-        logger.debug(f"Found {comments.count()} comments for post {self.object.id}")  # Логируем количество комментариев
-        context['page_obj'] = self.get_paginated_comments(comments, self.request)  # Добавляем пагинированные комментарии
-        context['form'] = CommentForm()                                    # Добавляем форму для комментариев
-        context['artist_bio'] = self.object.artist.bio if self.object.artist else ""  # Добавляем биографию исполнителя, если есть
-        if self.object.genre and self.object.genre.background_image:        # Проверяем наличие фонового изображения жанра
-            context['background_image'] = self.object.genre.background_image.url  # Устанавливаем фоновое изображение жанра
-            logger.info(f"Post genre background: {context['background_image']}")  # Логируем использование фона жанра
-        elif self.object.artist and self.object.artist.genres.exists():     # Проверяем наличие жанров у исполнителя
-            first_genre = self.object.artist.genres.first()                # Получаем первый жанр исполнителя
-            if first_genre and first_genre.background_image:               # Проверяем наличие фонового изображения
-                context['background_image'] = first_genre.background_image.url  # Устанавливаем фоновое изображение
-                logger.info(f"Artist genre background: {context['background_image']}")  # Логируем использование фона исполнителя
+        context = super().get_context_data(**kwargs)
+        extra_context = self.get_context_menu(title=context['post'].title)
+
+        # Комментарии с пагинацией
+        comments = self.object.comments.all().order_by('-created_at')
+        context['page_obj'] = self.get_paginated_comments(comments, self.request)
+        context['form'] = CommentForm()
+        context['artist_bio'] = self.object.artist.bio if self.object.artist else ""
+
+        # Фон
+        if self.object.genre and self.object.genre.background_image:
+            context['background_image'] = self.object.genre.background_image.url
+        elif self.object.artist and self.object.artist.genres.exists():
+            first_genre = self.object.artist.genres.first()
+            if first_genre and first_genre.background_image:
+                context['background_image'] = first_genre.background_image.url
         else:
-            context['background_image'] = None                             # Устанавливаем None, если фон не найден
-            logger.info("No background image set for post")                # Логируем отсутствие фона
-        context['site_settings'] = SiteSettings.objects.first()            # Добавляем настройки сайта
-        return {**context, **extra_context}                                # Объединяем контексты и возвращаем
+            context['background_image'] = None
+
+        context['site_settings'] = SiteSettings.objects.first()
+        return {**context, **extra_context}
+    
+
 
 class TrackUploadView(LoginRequiredMixin, ProfileContextMixin, CreateView):
     model = Track                                                              # Указываем модель Track для представления
@@ -243,54 +305,6 @@ class PostCreateView(DataMixin, LoginRequiredMixin, ProfileContextMixin, CreateV
         context['site_settings'] = SiteSettings.objects.first()                # Добавляем настройки сайта
         return {**context, **extra_context}                                    # Объединяем контексты и возвращаем
 
-class ToggleLikeView(LoginRequiredMixin, View):
-    def post(self, request, *args, **kwargs):
-        logger.debug(f"User {request.user} is authenticated: {request.user.is_authenticated}")  # Добавил лог для проверки авторизации
-        try:
-            data = json.loads(request.body)                                    # Парсим JSON из тела запроса
-            type = data.get('type')                                            # Получаем тип объекта (track, comment, post, artist)
-            user = request.user                                                # Получаем текущего пользователя
-            if not user.is_authenticated:                                      # Проверяем авторизацию
-                return JsonResponse({'success': False, 'message': 'User not authenticated'}, status=403)  # Возвращаем ошибку 403
-
-            if type == 'track':                                                # Проверяем, если тип — трек
-                track_id = data.get('track_id')                                # Получаем ID трека
-                track = get_object_or_404(Track, id=track_id)                  # Находим трек или возвращаем 404
-                reaction, created = Reaction.objects.get_or_create(user=user, track=track)  # Создаём или получаем реакцию
-                if not created:                                                # Если реакция уже существует
-                    reaction.delete()                                          # Удаляем реакцию (unlike)
-                return JsonResponse({'success': True, 'like_count': track.liked_by.count()})  # Возвращаем JSON с количеством лайков
-
-            elif type == 'comment':                                            # Проверяем, если тип — комментарий
-                comment_id = data.get('comment_id')                            # Получаем ID комментария
-                comment = get_object_or_404(Comment, id=comment_id)            # Находим комментарий или возвращаем 404
-                reaction, created = Reaction.objects.get_or_create(user=user, comment=comment)  # Создаём или получаем реакцию
-                if not created:                                                # Если реакция уже существует
-                    reaction.delete()                                          # Удаляем реакцию (unlike)
-                return JsonResponse({'success': True, 'like_count': comment.liked_by.count()})  # Возвращаем JSON с количеством лайков
-
-            elif type == 'post':                                               # Проверяем, если тип — пост
-                post_id = data.get('post_id')                                  # Получаем ID поста
-                post = get_object_or_404(Post, id=post_id)                     # Находим пост или возвращаем 404
-                reaction, created = Reaction.objects.get_or_create(user=user, post=post)  # Создаём или получаем реакцию
-                if not created:                                                # Если реакция уже существует
-                    reaction.delete()                                          # Удаляем реакцию (unlike)
-                return JsonResponse({'success': True, 'like_count': post.liked_by.count()})  # Возвращаем JSON с количеством лайков
-
-            elif type == 'artist':                                             # Проверяем, если тип — исполнитель
-                artist_id = data.get('artist_id')                              # Получаем ID исполнителя
-                artist = get_object_or_404(Artist, id=artist_id)               # Находим исполнителя или возвращаем 404
-                reaction, created = Reaction.objects.get_or_create(user=user, artist=artist)  # Создаём или получаем реакцию
-                if not created:                                                # Если реакция уже существует
-                    reaction.delete()                                          # Удаляем реакцию (unlike)
-                return JsonResponse({'success': True, 'like_count': artist.liked_by.count()})  # Возвращаем JSON с количеством лайков
-
-            return JsonResponse({'success': False, 'message': 'Invalid type'}, status=400)  # Возвращаем ошибку для неверного типа
-
-        except json.JSONDecodeError:
-            return JsonResponse({'success': False, 'message': 'Invalid JSON'}, status=400)  # Возвращаем ошибку для неверного JSON
-        except Exception as e:
-            return JsonResponse({'success': False, 'message': str(e)}, status=400)  # Возвращаем ошибку для других исключений
 
 class AddCommentView(LoginRequiredMixin, View):
     def post(self, request, post_slug, *args, **kwargs):
@@ -529,29 +543,30 @@ class UpdateProfileView(LoginRequiredMixin, ProfileContextMixin, UpdateView):
 
 # Новое представление для отображения профиля пользователя
 class MyProfileView(LoginRequiredMixin, ProfileContextMixin, DataMixin, TemplateView):
-    login_url = '/login/'                                                      # Путь (URL), куда будет перенаправлён неавторизованный пользователь
-    redirect_field_name = 'redirect_to'                                        # Имя параметра для сохранения URL перенаправления
-    template_name = 'vibemusic/my_profile.html'                                 # Указываем шаблон явно
+    login_url = '/login/'
+    redirect_field_name = 'redirect_to'
+    template_name = 'vibemusic/my_profile.html'
 
     def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)  # Теперь это работает, так как TemplateView имеет get_context_data
+        context = super().get_context_data(**kwargs)
         user_profile = self.request.user.profile
         context['user_profile'] = user_profile
         context['following'] = user_profile.following.all()
         context['user_posts'] = Post.objects.filter(author=self.request.user)
         context['edit_form'] = ProfileForm(instance=user_profile)
         context['title'] = "Мой профиль"
-        context['current_datetime'] = timezone.now()  # Добавляем текущую дату и время
+        context['current_datetime'] = timezone.now()
+        context['site_settings'] = SiteSettings.objects.first()
         return context
-    
+
     def post(self, request, *args, **kwargs):
-        user_profile = request.user.profile                                     # Получаем профиль текущего пользователя
-        action = request.POST.get('action')                                     # Получаем действие из POST-запроса (например, 'edit_profile' или 'delete_post')
-        edit_form = ProfileForm(request.POST, request.FILES, instance=user_profile)   # Создаём форму с данными из запроса
+        user_profile = request.user.profile
+        action = request.POST.get('action')
+        edit_form = ProfileForm(request.POST, request.FILES, instance=user_profile)
 
         if action == 'edit_profile' and edit_form.is_valid():
             edit_form.save()
-            messages.success(request, "Профиль успешно обновлен!")
+            messages.success(request, "Профиль успешно обновлён!")
             return redirect('vibemusic:my_profile')
 
         elif action == 'delete_post':
@@ -559,51 +574,37 @@ class MyProfileView(LoginRequiredMixin, ProfileContextMixin, DataMixin, Template
             try:
                 post = Post.objects.get(id=post_id, author=request.user)
                 post.delete()
-                messages.success(request, "Пост успешно удален!")
-                return redirect('vibemusic:my_profile')
+                messages.success(request, "Пост успешно удалён!")
             except Post.DoesNotExist:
-                messages.error(request, "Пост не найден или вам не пренадлежит.")
-                return redirect('vibemusic:my_profile')
-        
+                messages.error(request, "Пост не найден или вам не принадлежит.")
+            return redirect('vibemusic:my_profile')
+
         if edit_form.errors:
             messages.error(request, "Ошибка при обновлении профиля. Проверьте введённые данные.")
-        context = self.get_context_data(
-            user_profile=user_profile,
-            following=user_profile.following.all(),
-            user_posts=Post.objects.filter(author=request.user),
-            edit_form=edit_form,
-            title="Мой профиль",
-            current_datetime=timezone.now()                                         # Добавляем текущую дату и время
-        )
+
+        context = self.get_context_data()
+        context['edit_form'] = edit_form
         return self.render_to_response(context)
 
 
 
-
 # Новое представление для настройки Telegram
-class TelegramSettingsView(LoginRequiredMixin, ProfileContextMixin, DataMixin, View):
-    login_url = '/login/'                                                      # Путь (URL), куда будет перенаправлён неавторизованный пользователь
-    redirect_field_name = 'redirect_to'                                        # Имя параметра для сохранения URL перенаправления
+class TelegramSettingsView(LoginRequiredMixin, ProfileContextMixin, DataMixin, TemplateView):
+    login_url = '/login/'
+    redirect_field_name = 'redirect_to'
+    template_name = 'vibemusic/telegram_settings.html'
 
-    def get(self, request):
-        user_profile = request.user.profile                                    # Получаем профиль текущего пользователя
-        context = self.get_context_data(                                       # Получаем контекст с использованием миксинов
-            user_profile=user_profile,                                         # Добавляем профиль пользователя в контекст
-            title='Настройки Telegram'                                         # Устанавливаем заголовок страницы
-        )
-        return render(request, 'vibemusic/telegram_settings.html', context)    # Рендерим шаблон с контекстом
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        user_profile = self.request.user.profile
+        context['user_profile'] = user_profile
+        context['telegram_token'] = make_telegram_connect_token(self.request.user)
+        context['TELEGRAM_BOT_USERNAME'] = getattr(settings, 'TELEGRAM_BOT_USERNAME', None)
+        context['title'] = "Настройки Telegram"
+        context['site_settings'] = SiteSettings.objects.first()
+        return context
 
-# Новое представление для подтверждения выхода
-# vibemusic/views.py
-from django.contrib.auth import logout
-from django.urls import reverse_lazy
-from django.views.generic import TemplateView
-from django.contrib.auth.mixins import LoginRequiredMixin
-from .utils import DataMixin, ProfileContextMixin
-from django.http import HttpResponseRedirect
-import logging
 
-logger = logging.getLogger(__name__)
 
 class LogoutConfirmView(LoginRequiredMixin, ProfileContextMixin, DataMixin, TemplateView):
     login_url = '/login/'

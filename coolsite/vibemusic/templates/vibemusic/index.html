@@ -1,10 +1,11 @@
 <!--index.html-->
+<!-- vibemusic/templates/vibemusic/index.html -->
 {% extends 'vibemusic/base.html' %}
 {% load static %}
-{% comment %} index.html {% endcomment %}
+
 {% block content %}
 <div class="container mt-4">
-    <h1 class="mb-4 text-center">Приятного прослушивания</h1>           <!-- Заголовок страницы -->
+    <h1 class="mb-4 text-center">Приятного прослушивания</h1>
 
     {% for post in page_obj %}
     <div class="card mb-4 shadow-sm d-flex flex-row" style="min-height: 300px; border-radius: 10px; overflow: hidden;">
@@ -15,7 +16,8 @@
             {% else %}
                 <img src="{% static 'vibemusic/images/placeholder.jpg' %}" alt="Placeholder" style="width: 100%; height: 100%; object-fit: cover;">
             {% endif %}
-            <!-- Название исполнителя (левый верхний угол) -->
+
+            <!-- Название исполнителя -->
             <div class="position-absolute top-0 start-0 p-2" style="background: rgba(0, 0, 0, 0.7); border-radius: 0 0 5px 0;">
                 <p class="mb-0 text-white">
                     {% if post.artist %}
@@ -25,30 +27,51 @@
                     {% endif %}
                 </p>
             </div>
-            <!-- Кнопка "Читать дальше" (правый нижний угол) -->
+
+            <!-- Кнопка "Читать дальше" -->
             <div class="position-absolute bottom-0 end-0 p-2">
                 <a href="{% url 'vibemusic:post_detail' post.slug %}" class="btn btn-primary btn-sm">Читать дальше</a>
             </div>
         </div>
+
         <!-- Описание (40%) -->
         <div class="card-body bg-secondary text-white d-flex flex-column justify-content-between" style="width: 40%; padding: 15px;">
             <div>
-                <h2 class="card-title h5 mb-2">{{ post.title }}</h2>        <!-- Заголовок поста -->
-                {% if user.is_authenticated and post.author != user %}      <!-- Проверяем авторизацию и что автор не текущий пользователь -->
+                <h2 class="card-title h5 mb-2">{{ post.title }}</h2>
+
+                <!-- Подписка -->
+                {% if user.is_authenticated and post.author != user %}
                     <a href="{% url 'vibemusic:toggle_follow' post.author.profile.id %}" 
                        class="btn btn-sm {% if post.author.profile in user.profile.following.all %}btn-danger{% else %}btn-primary{% endif %} follow-btn mb-2">
                         {% if post.author.profile in user.profile.following.all %}Отписаться{% else %}Подписаться{% endif %}
-                    </a>                                                    <!-- Кнопка подписки/отписки -->
+                    </a>
                 {% endif %}
-                <p class="mb-0">{{ post.content|safe|truncatechars:1000 }}</p>  <!-- Содержимое поста -->
+
+                <!-- ЛАЙК КНОПКА -->
+                {% if user.is_authenticated %}
+                    <button 
+                        data-like="post" 
+                        data-id="{{ post.id }}" 
+                        class="btn btn-sm btn-outline-light like-btn {% if post.liked_by_me %}liked{% endif %}"
+                        style="margin-top: 8px;">
+                        <i class="bi {% if post.liked_by_me %}bi-heart-fill text-danger{% else %}bi-heart{% endif %}"></i>
+                        <span class="like-count">{{ post.like_count }}</span>
+                    </button>
+                {% else %}
+                    <span class="text-muted" style="margin-top: 8px; display: inline-block;">
+                        <i class="bi bi-heart"></i> <span class="like-count">{{ post.like_count }}</span>
+                    </span>
+                {% endif %}
+
+                <p class="mb-0 mt-3">{{ post.content|safe|truncatechars:300 }}</p>
             </div>
         </div>
     </div>
     {% empty %}
-    <p class="text-center text-muted">Пока нет постов.</p>                 <!-- Сообщение, если постов нет -->
+    <p class="text-center text-muted">Пока нет постов.</p>
     {% endfor %}
 
-    <!-- Пагинация постов -->
+    <!-- Пагинация -->
     {% if page_obj.has_other_pages %}
         <nav aria-label="Навигация по постам" class="mt-4">
             <ul class="pagination justify-content-center">

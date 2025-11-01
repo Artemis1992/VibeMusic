@@ -752,3 +752,17 @@ textarea.form-control {
 .text-danger {
     color: #dc3545;
 }
+
+.like-btn {
+    transition: all 0.2s ease;
+}
+
+.like-btn.liked {
+    background-color: #dc3545 !important;
+    border-color: #dc3545 !important;
+    color: white !important;
+}
+
+.like-btn:hover {
+    transform: scale(1.1);
+}

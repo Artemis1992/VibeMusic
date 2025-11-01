@@ -43,7 +43,9 @@ INSTALLED_APPS = [
     'crispy_forms',
     'crispy_bootstrap5',
     'widget_tweaks',
+    'rest_framework',
     'vibemusic.apps.VibemusicConfig',
+    'vibemusic.api.v1.apps.ApiV1Config',                                # ← API v1
 ]
 
 MIDDLEWARE = [
@@ -117,6 +119,23 @@ TIME_ZONE = 'Asia/Yekaterinburg'
 USE_I18N = True
 
 USE_TZ = True
+
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [                             # Классы аутентификации, которые проверяют пользователей: через сессии, BasicAuth или JWT
+        'rest_framework.authentication.SessionAuthentication',      # Аутентификация через сессии Django
+        'rest_framework.authentication.BasicAuthentication',        # Аутентификация через базовый HTTP (имя пользователя + пароль)
+        'rest_framework_simplejwt.authentication.JWTAuthentication',  # Аутентификация через JWT-токены
+    ],
+    'DEFAULT_PERMISSION_CLASSES': [                                 # Классы разрешений: кто что может делать
+        'rest_framework.permissions.IsAuthenticatedOrReadOnly',     # Любой может читать, но изменять (POST, PUT, DELETE) только авторизованные пользователи
+    ],
+    'DEFAULT_PAGINATION_CLASS': [                                   # Класс пагинации — делим список объектов на страницы
+       'rest_framework.pagination.PageNumberPagination',            # Пагинация по номерам страниц
+    ],
+    'PAGE_SIZE': 10                                                 # Размер страницы по умолчанию — 10 объектов
+}
+
 
 
 # Static files (CSS, JavaScript, Images)

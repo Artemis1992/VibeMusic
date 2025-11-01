@@ -187,7 +187,7 @@
 Эти переменные используются в `control_of_likes.js` для отправки AJAX-запросов.
 {% endcomment %}
 <script>
-    var toggleLikeUrl = "{% url 'vibemusic:toggle_like' %}"; 
+
     var csrfToken = "{{ csrf_token }}";
 </script>
 <script src="{% static 'vibemusic/js/control_of_likes.js' %}"></script>

@@ -1,118 +1,102 @@
-// control_of_likes.js
-document.addEventListener('DOMContentLoaded', function() {
-    // Лайки постов
-    document.querySelectorAll('.like-post-btn').forEach(button => {
-        button.addEventListener('click', function() {
-            const postId = this.getAttribute('data-post-id');
-            const isLiked = this.getAttribute('data-liked') === 'true';
-            const heartIcon = this.querySelector('.heart-icon');
-            const likeCount = this.querySelector('.like-count');
+// vibemusic/static/vibemusic/js/control_of_likes.js
+document.addEventListener('DOMContentLoaded', function () {
 
-            fetch(toggleLikeUrl, {
+    async function toggleLike(type, id, button) {
+        if (!button || button.classList.contains('disabled')) return;
+
+        // CSRF токен: из window.csrfToken (из шаблона) или из кук
+        const csrfToken = window.csrfToken ||
+                         document.querySelector('[name=csrfmiddlewaretoken]')?.value ||
+                         getCookie('csrftoken');
+        if (!csrfToken) {
+            console.error('CSRF токен не найден!');
+            return;
+        }
+
+        const icon = button.querySelector('.heart-icon');
+        const countSpan = button.querySelector('.like-count');
+        button.classList.add('disabled');
+
+        try {
+            const response = await fetch(`/api/v1/like/${type}/`, {
                 method: 'POST',
                 headers: {
-                    'X-CSRFToken': csrfToken,
                     'Content-Type': 'application/json',
-                    'X-Requested-With': 'XMLHttpRequest'
+                    'X-CSRFToken': csrfToken
                 },
-                body: JSON.stringify({ type: 'post', post_id: postId })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    this.setAttribute('data-liked', data.liked ? 'true' : 'false');
-                    heartIcon.setAttribute('fill', data.liked ? '#ff5733' : '#ffffff');
-                    likeCount.textContent = data.like_count;
-                } else {
-                    console.error('Ошибка от сервера:', data.message);
-                }
-            })
-            .catch(error => console.error('Ошибка:', error));
-        });
-    });
+                body: JSON.stringify({ [`${type}_id`]: parseInt(id) })
+            });
 
-    // Лайки треков
-    document.querySelectorAll('.like-track-btn').forEach(button => {
-        button.addEventListener('click', function() {
-            const trackId = this.getAttribute('data-track-id');
-            const isLiked = this.getAttribute('data-liked') === 'true';
-            const heartIcon = this.querySelector('.heart-icon');
-            const likeCount = this.querySelector('.like-count');
+            if (!response.ok) {
+                const err = await response.json().catch(() => ({}));
+                throw new Error(err.error || err.detail || 'Ошибка сервера');
+            }
 
-            fetch(toggleLikeUrl, {
-                method: 'POST',
-                headers: {
-                    'X-CSRFToken': csrfToken,
-                    'Content-Type': 'application/json',
-                    'X-Requested-With': 'XMLHttpRequest'
-                },
-                body: JSON.stringify({ type: 'track', track_id: trackId })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    this.setAttribute('data-liked', data.liked ? 'true' : 'false');
-                    heartIcon.setAttribute('fill', data.liked ? '#ff5733' : '#ffffff');
-                    likeCount.textContent = data.like_count;
-                } else {
-                    console.error('Ошибка от сервера:', data.message);
-                }
-            })
-            .catch(error => console.error('Ошибка:', error));
-        });
-    });
+            const data = await response.json();
 
-    // Лайки комментариев
-    document.querySelectorAll('.like-comment-btn').forEach(button => {
-        button.addEventListener('click', function() {
-            const commentId = this.getAttribute('data-comment-id');
-            const isLiked = this.getAttribute('data-liked') === 'true';
-            const heartIcon = this.querySelector('.heart-icon');
-            const likeCount = this.querySelector('.like-count');
+            // Обновляем UI
+            if (icon) {
+                icon.style.fill = data.liked ? '#ff5733' : '#ffffff';
+            }
+            if (countSpan) {
+                countSpan.textContent = data.count;
+            }
+            button.setAttribute('data-liked', data.liked);
 
-            fetch(toggleLikeUrl, {
-                method: 'POST',
-                headers: {
-                    'X-CSRFToken': csrfToken,
-                    'Content-Type': 'application/json',
-                    'X-Requested-With': 'XMLHttpRequest'
-                },
-                body: JSON.stringify({ type: 'comment', comment_id: commentId })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    this.setAttribute('data-liked', data.liked ? 'true' : 'false');
-                    heartIcon.setAttribute('fill', data.liked ? '#ff5733' : '#ffffff');
-                    likeCount.textContent = data.like_count;
-                } else {
-                    console.error('Ошибка от сервера:', data.message);
-                }
-            })
-            .catch(error => console.error('Ошибка:', error));
-        });
-    });
+            // Анимация
+            button.style.transform = 'scale(1.3)';
+            setTimeout(() => button.style.transform = '', 150);
 
-    // Подписка/отписка
-    document.querySelectorAll('.follow-btn').forEach(button => {
-        button.addEventListener('click', function() {
-            const profileId = this.getAttribute('data-profile-id');
-            fetch(`/follow/${profileId}/`, {
-                method: 'POST',
-                headers: {
-                    'X-CSRFToken': csrfToken,
-                    'X-Requested-With': 'XMLHttpRequest'
+        } catch (error) {
+            console.error('Ошибка лайка:', error);
+            alert('Не удалось поставить лайк: ' + error.message);
+        } finally {
+            button.classList.remove('disabled');
+        }
+    }
+
+    // Вспомогательная функция для чтения куки
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
                 }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    this.textContent = data.action === 'followed' ? 'Отписаться' : 'Подписаться';
-                    this.classList.toggle('btn-primary', data.action === 'unfollowed');
-                    this.classList.toggle('btn-secondary', data.action === 'followed');
-                }
-            })
-            .catch(error => console.error('Ошибка:', error));
-        });
+            }
+        }
+        return cookieValue;
+    }
+
+    // Делегирование кликов
+    document.addEventListener('click', function (e) {
+        const btn = e.target.closest('.like-post-btn, .like-track-btn, .like-comment-btn');
+        if (!btn) return;
+
+        e.preventDefault();
+        e.stopPropagation();
+
+        let type, id;
+
+        if (btn.classList.contains('like-post-btn')) {
+            type = 'post';
+            id = btn.dataset.postId;  // ← dataset.postId → data-post-id
+        } else if (btn.classList.contains('like-track-btn')) {
+            type = 'track';
+            id = btn.dataset.trackId; // ← dataset.trackId → data-track-id
+        } else if (btn.classList.contains('like-comment-btn')) {
+            type = 'comment';
+            id = btn.dataset.commentId; // ← dataset.commentId → data-comment-id
+        }
+
+        if (!id) {
+            console.error('ID не найден для кнопки:', btn);
+            return;
+        }
+
+        toggleLike(type, id, btn);
     });
 });

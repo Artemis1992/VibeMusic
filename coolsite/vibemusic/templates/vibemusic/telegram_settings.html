@@ -1,0 +1,13 @@
+{% extends "vibemusic/base.html" %}
+{% load static %}
+
+{% block content %}
+<h1>{{ title }}</h1>
+
+<p>Привязка Telegram к вашему аккаунту VibeMusic:</p>
+
+<p>Используйте токен для подключения: <strong>{{ telegram_token }}</strong></p>
+<p>Имя бота: <strong>{{ TELEGRAM_BOT_USERNAME }}</strong></p>
+
+<p>После ввода токена в Telegram, ваши уведомления будут приходить напрямую в чат.</p>
+{% endblock %}
