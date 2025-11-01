@@ -1,122 +1,148 @@
-/* vibemusic/static/vibemusic/css/style.css */
+/* ==========================================================================
+   vibemusic/static/vibemusic/css/style.css
+   ========================================================================== */
+/* ОПИСАНИЕ: 
+   Главный CSS-файл проекта. Объединяет все стили: сброс, типографика, формы, 
+   карточки, плеер, комментарии, эмодзи-пикер. Все конфликты устранены.
+   Используется тёмная тема с полупрозрачными блоками и blur-эффектом.
+   ========================================================================== */
+
 /* ==========================================================================
    СЕКЦИЯ 1: СБРОС СТАНДАРТНЫХ СТИЛЕЙ
    ========================================================================== */
 * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
+    margin: 0;                    /* Убирает внешние отступы у всех элементов */
+    padding: 0;                   /* Убирает внутренние отступы */
+    box-sizing: border-box;       /* Включает padding и border в ширину/высоту */
 }
 
 /* ==========================================================================
    СЕКЦИЯ 2: ОСНОВНЫЕ СТИЛИ ТЕЛА ДОКУМЕНТА
    ========================================================================== */
 body {
-    background-color: #1a1a1a;
-    color: #ffffff;
-    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-    line-height: 1.6;
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-    background-attachment: fixed;
-    animation: fadeBackground 15s infinite;
+    background-color: #1a1a1a;    /* Тёмный фон по умолчанию */
+    color: #ffffff;               /* Белый текст */
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; /* Чистый шрифт */
+    line-height: 1.6;             /* Удобная высота строки */
+    background-size: cover;       /* Фон на весь экран */
+    background-position: center;  /* Центрирование фона */
+    background-repeat: no-repeat; /* Без повтора */
+    background-attachment: fixed; /* Фон фиксирован при скролле */
+    animation: fadeBackground 15s infinite; /* Плавная анимация прозрачности фона */
 }
 
+/* Динамический фон через data-атрибут */
 body[data-background-image] {
-    background-image: var(--background-image);
+    background-image: var(--background-image); /* Установка фона через JS */
 }
 
+/* Анимация пульсации фона */
 @keyframes fadeBackground {
-    0% { opacity: 0.7; }
-    50% { opacity: 1; }
-    100% { opacity: 0.7; }
+    0%, 100% { opacity: 0.7; }    /* Начало и конец — полупрозрачно */
+    50% { opacity: 1; }           /* Середина — полностью видно */
 }
 
 /* ==========================================================================
    СЕКЦИЯ 3: СТИЛИ ДЛЯ ФОРМ И КОНТЕЙНЕРОВ
    ========================================================================== */
 .form-container {
-    max-width: 400px;
-    margin: 50px auto;
-    padding: 20px;
-    background-color: rgba(0, 0, 0, 0.7);
-    border-radius: 8px;
-    backdrop-filter: blur(10px);
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+    max-width: 400px;             /* Ограничиваем ширину формы */
+    margin: 50px auto;            /* Центрируем по горизонтали */
+    padding: 20px;                /* Внутренний отступ */
+    background-color: rgba(0, 0, 0, 0.7); /* Полупрозрачный чёрный фон */
+    border-radius: 8px;           /* Скруглённые углы */
+    backdrop-filter: blur(10px);  /* Размытие фона под формой */
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5); /* Тень */
 }
 
+/* Поля ввода */
 .form-control {
-    max-width: 400px;
-    margin-bottom: 10px;
-    background-color: rgba(204, 204, 204, 0.3);
-    border: 1px solid #b9b9b9;
-    color: #ffffff;
-    padding: 10px;
-    border-radius: 4px;
-    width: 100%;
-    font-size: 1rem;
+    max-width: 100%;             /* Полное заполнение */
+    margin-bottom: 10px;          /* Отступ снизу */
+    background-color: rgba(204, 204, 204, 0.3); /* Полупрозрачный серый */
+    border: 1px solid #b9b9b9;    /* Светлая граница */
+    color: #ffffff;               /* Белый текст */
+    padding: 10px;                /* Внутренний отступ */
+    border-radius: 4px;           /* Скругление */
+    width: 100%;                  /* Растягиваем по ширине */
+    font-size: 1rem;              /* Размер шрифта */
 }
 
+/* Фокус на поле */
 .form-control:focus {
-    border-color: #ff6600;
-    box-shadow: 0 0 5px rgba(255, 102, 0, 0.5);
-    outline: none;
+    border-color: #ff6600;        /* Оранжевая граница при фокусе */
+    box-shadow: 0 0 5px rgba(255, 102, 0, 0.5); /* Оранжевое свечение */
+    outline: none;                /* Убираем стандартный outline */
 }
 
+/* Текстовое поле (textarea) */
 textarea.form-control {
-    resize: vertical;
-    min-height: 100px;
+    resize: vertical;             /* Разрешить только вертикальное растяжение */
+    min-height: 100px;            /* Минимальная высота */
 }
 
 /* ==========================================================================
    СЕКЦИЯ 4: СТИЛИ ДЛЯ КАРТОЧЕК ПОСТОВ
    ========================================================================== */
 .card {
-    border: none;
-    border-radius: 10px;
-    overflow: hidden;
-    width: 100%;
-    height: 400px;
-    max-width: 1200px;
-    margin: 0 auto;
+    border: none;                 /* Без стандартной границы */
+    border-radius: 10px;          /* Скруглённые углы */
+    overflow: hidden;             /* Обрезаем содержимое по краям */
+    width: 100%;                  /* На всю ширину контейнера */
+    height: 100%;                /* На всю высоту контейнера*/
+    max-width: 1200px;            /* Максимальная ширина */
+    margin: 0 auto;               /* Центрирование */
+    display: flex;                /* Гибкий контейнер для изображения и текста */
+    transition: transform 0.3s ease, box-shadow 0.3s ease; /* Плавная анимация */
 }
 
+/* Эффект при наведении на карточку */
+.card:hover {
+    transform: translateY(-5px);  /* Поднимаем карточку */
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5); /* Усиливаем тень */
+}
+
+/* Изображение поста */
 .post-image {
-    width: 60%;
-    height: 100%;
-    position: relative;
+    width: 60%;                   /* 60% ширины карточки */
+    height: 100%;                 /* На всю высоту */
+    position: relative;           /* Для позиционирования внутри */
 }
 
 .post-image img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
+    width: 100%;                  /* На всю ширину контейнера */
+    height: 100%;                 /* На всю высоту */
+    object-fit: cover;            /* Обрезаем, сохраняя пропорции */
 }
 
+/* Текстовая часть карточки */
 .card-body {
-    background-color: transparent;
-    width: 40%;
-    padding: 15px;
+    background-color: transparent; /* Прозрачный фон */
+    width: 40%;                   /* 40% ширины */
+    padding: 15px;                /* Внутренний отступ */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
 }
 
+/* Адаптивность карточек */
 @media (max-width: 768px) {
     .card {
-        flex-direction: column;
-        height: auto;
-        max-width: 100%;
+        flex-direction: column;   /* Вертикальное расположение */
+        height: auto;             /* Автовысота */
+        max-width: 100%;          /* На всю ширину */
     }
     .post-image {
-        width: 100%;
-        height: 300px;
+        width: 100%;              /* Изображение на всю ширину */
+        height: 300px;            /* Фиксированная высота */
     }
     .card-body {
-        width: 100%;
+        width: 100%;              /* Текст на всю ширину */
     }
 }
 
 /* ==========================================================================
-   СЕКЦИЯ 5: СТИЛИ ДЛЯ ШАПКИ И НАВИГАЦИИ
+   СЕКЦИЯ 5: ШАПКА И НАВИГАЦИЯ
    ========================================================================== */
 .header {
     position: relative;
@@ -125,69 +151,56 @@ textarea.form-control {
     margin: 0 auto;
     overflow: hidden;
     z-index: 1;
-    background-color: rgba(52, 58, 64, 0.8);
+    background-color: rgba(52, 58, 64, 0.8); /* Полупрозрачный фон */
 }
 
 .header > div {
     position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
-    filter: brightness(0.75);
+    filter: brightness(0.75);     /* Затемнение фона */
     z-index: -1;
 }
 
-.header .container {
-    position: relative;
-    z-index: 2;
-}
+.header .container { position: relative; z-index: 2; }
 
-@media (max-width: 768px) {
-    .header {
-        height: 200px;
-    }
-}
+@media (max-width: 768px) { .header { height: 200px; } }
 
+/* Навигационная панель */
 .navbar {
     position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
+    top: 0; left: 0; right: 0;
     z-index: 1030;
     background-color: rgba(52, 58, 64, 0.95);
     padding: 10px 0;
+    backdrop-filter: blur(8px);
 }
 
+/* Ссылки в навбаре */
 .navbar-dark .navbar-nav .nav-link {
     color: #ffffff;
     font-weight: 700;
     font-size: 1.1rem;
     text-decoration: none;
 }
+.navbar-dark .navbar-nav .nav-link:hover { color: #ff5e00; }
 
-.navbar-dark .navbar-nav .nav-link:hover {
-    color: #ff5e00;
-}
-
+/* Логотип */
 .navbar-dark .navbar-brand {
     color: #ff5100;
     font-weight: bold;
     font-size: 1.5rem;
 }
+.navbar-dark .navbar-brand:hover { color: #ffffff; }
 
-.navbar-dark .navbar-brand:hover {
-    color: #ffffff;
-}
-
+/* Выпадающее меню */
 .navbar-dark .dropdown-menu {
     display: none !important;
     position: absolute;
-    top: 100%;
-    right: 0;
+    top: 100%; right: 0;
     z-index: 1045;
     background-color: rgba(26, 26, 26, 0.95);
     border: none;
@@ -197,43 +210,30 @@ textarea.form-control {
     transform: translateY(-10px);
     transition: opacity 0.2s ease, transform 0.2s ease;
 }
-
 .navbar-dark .dropdown-menu.show {
     display: block !important;
     opacity: 1;
     transform: translateY(0);
 }
-
 .navbar-dark .dropdown-item {
     color: #ffffff;
     font-weight: 500;
     padding: 10px 20px;
 }
-
 .navbar-dark .dropdown-item:hover {
     background-color: #444444;
     color: #ff5e00;
 }
 
+/* Заголовок в шапке */
 .header-title {
     border-radius: 10px;
     padding: 1.5rem;
     transition: transform 0.3s ease;
 }
-
-.header-title:hover {
-    transform: translateY(-5px);
-}
-
-.header-title h1 {
-    font-size: 2.5rem;
-    font-weight: 700;
-    margin: 0;
-}
-
-.header-title-animated {
-    animation: slideUp 1s ease-out forwards;
-}
+.header-title:hover { transform: translateY(-5px); }
+.header-title h1 { font-size: 2.5rem; font-weight: 700; margin: 0; }
+.header-title-animated { animation: slideUp 1s ease-out forwards; }
 
 @keyframes slideUp {
     0% { transform: translateY(100px); opacity: 0; }
@@ -241,98 +241,72 @@ textarea.form-control {
 }
 
 /* ==========================================================================
-   СЕКЦИЯ 6: СТИЛИ ДЛЯ УВЕДОМЛЕНИЙ
+   СЕКЦИЯ 6: УВЕДОМЛЕНИЯ
    ========================================================================== */
+.alert-success, .alert-danger {
+    padding: 10px 20px;
+    margin-bottom: 15px;
+    border-radius: 4px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+}
 .alert-success {
     background-color: rgba(40, 167, 69, 0.9);
-    color: #ffffff;
-    padding: 10px 20px;
-    margin-bottom: 15px;
-    border-radius: 4px;
     border: 1px solid #28a745;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+    color: #ffffff;
 }
-
 .alert-danger {
     background-color: rgba(220, 53, 69, 0.9);
-    color: #ffffff;
-    padding: 10px 20px;
-    margin-bottom: 15px;
-    border-radius: 4px;
     border: 1px solid #dc3545;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+    color: #ffffff;
 }
-
-.alert .btn-close {
-    filter: invert(1);
-    opacity: 0.8;
-}
-
-.alert .btn-close:hover {
-    opacity: 1;
-}
+.alert .btn-close { filter: invert(1); opacity: 0.8; }
+.alert .btn-close:hover { opacity: 1; }
 
 /* ==========================================================================
-   СЕКЦИЯ 7: СТИЛИ ДЛЯ ПАГИНАЦИИ
+   СЕКЦИЯ 7: ПАГИНАЦИЯ
    ========================================================================== */
 .pagination .page-link {
     background-color: #2c2c2c;
     color: #ffffff;
     border: 1px solid #444;
 }
-
 .pagination .page-item.active .page-link {
     background-color: #007bff;
     border-color: #007bff;
 }
 
 /* ==========================================================================
-   СЕКЦИЯ 8: СТИЛИ ДЛЯ ПЛЕЕРА И МУЗЫКИ
+   СЕКЦИЯ 8: ПЛЕЕР И МУЗЫКА
    ========================================================================== */
-.music-player-container .track {
-    width: 100px;
-}
+.music-player-container .track { width: 100px; }
 
 .album-cover {
     position: relative;
-    width: 100px;
-    height: 100px;
+    width: 100px; height: 100px;
     border-radius: 50%;
     overflow: hidden;
 }
-
 .album-image {
-    width: 100%;
-    height: 100%;
+    width: 100%; height: 100%;
     object-fit: cover;
     transition: transform 0.3s ease;
     border-radius: 50%;
 }
+.album-cover.playing .album-image { animation: spin 4s linear infinite; }
 
-.album-cover.playing .album-image {
-    animation: spin 4s linear infinite;
-}
-
-@keyframes spin {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
-}
+@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 
 .play-button {
     background: rgba(0, 0, 0, 0.5);
     border: none;
     border-radius: 50%;
-    width: 40px;
-    height: 40px;
+    width: 40px; height: 40px;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
 }
-
-.play-button:hover {
-    background: rgba(0, 0, 0, 0.7);
-}
+.play-button:hover { background: rgba(0, 0, 0, 0.7); }
 
 .audio-player {
     background-color: #343a40;
@@ -341,85 +315,11 @@ textarea.form-control {
     bottom: 0;
     width: 100%;
     z-index: 1000;
-}
-
-.audio-player .play-pause-btn {
-    background: none;
-    border: none;
-    cursor: pointer;
-}
-
-.audio-player .form-range {
-    height: 5px;
-    background: #6c757d;
-    border-radius: 5px;
-}
-
-.audio-player .form-range::-webkit-slider-thumb {
-    background: #007bff;
-    cursor: pointer;
-}
-
-.audio-player .form-range::-moz-range-thumb {
-    background: #007bff;
-    cursor: pointer;
-}
-
-.audio-player .btn-link {
-    color: #fff;
-    text-decoration: none;
-}
-
-.audio-player .btn-link:hover {
-    color: #007bff;
-}
-
-#progress {
-    width: 100%;
-    height: 5px;
-    background: transparent;
-    border-radius: 5px;
-    outline: none;
-    appearance: none;
-    -webkit-appearance: none;
-}
-
-#progress::-webkit-slider-runnable-track {
-    background: transparent;
-}
-
-#progress::-moz-range-track {
-    background: transparent;
-}
-
-#progress::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    width: 12px;
-    height: 12px;
-    background: #1DB954;
-    border-radius: 50%;
-    cursor: pointer;
-}
-
-#progress::-moz-range-thumb {
-    width: 12px;
-    height: 12px;
-    background: #1DB954;
-    border-radius: 50%;
-    cursor: pointer;
-}
-
-.track-title {
-    font-size: 0.9rem;
-    color: #ffffff;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 100px;
+    backdrop-filter: blur(8px);
 }
 
 /* ==========================================================================
-   СЕКЦИЯ 9: СТИЛИ ДЛЯ КНОПОК
+   СЕКЦИЯ 9: КНОПКИ
    ========================================================================== */
 .btn-primary {
     background-color: #ff6600;
@@ -431,338 +331,137 @@ textarea.form-control {
     font-size: 1rem;
     transition: background-color 0.3s ease;
 }
-
 .btn-primary:hover {
     background-color: #e65c00;
     border-color: #e65c00;
 }
 
-.btn-secondary {
-    background-color: #28a745;
-    border-color: #28a745;
-    color: #ffffff;
-}
-
-.btn-secondary:hover {
-    background-color: #218838;
-    border-color: #218838;
-}
-
-.btn-danger {
-    background-color: #dc3545;
-    border-color: #dc3545;
-    color: #ffffff;
-    padding: 8px 16px;
-    font-size: 0.9rem;
-    transition: background-color 0.3s ease;
-}
-
-.btn-danger:hover {
-    background-color: #c82333;
-    border-color: #c82333;
-}
-
-.follow-btn {
-    padding: 8px 16px;
-    font-size: 0.9rem;
-    border-radius: 4px;
-    transition: all 0.3s ease;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-}
-
-.follow-btn:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-}
-
 /* ==========================================================================
-   СЕКЦИЯ 10: СТИЛИ ДЛЯ МОДАЛЬНЫХ ОКОН
+   СЕКЦИЯ 10: КОММЕНТАРИИ + ЭМОДЗИ-ПИКЕР (ГЛАВНЫЙ БЛОК)
    ========================================================================== */
-.modal {
-    z-index: 1050 !important;
+/* Единый блок: поле комментария + эмодзи */
+.comment-block {
+    background: rgba(40, 40, 40, 0.92);     /* Тёмный полупрозрачный фон */
+    border: 1px solid #555;                 /* Тонкая граница */
+    border-radius: 14px;                    /* Скруглённые углы */
+    backdrop-filter: blur(12px);            /* Размытие фона */
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.35); /* Глубокая тень */
+    overflow: hidden;                       /* Обрезаем содержимое */
+    padding: 1rem;                          /* Внутренний отступ */
 }
 
-.modal-backdrop {
-    z-index: 1040 !important;
+/* Поле ввода комментария — без фона и границ */
+.comment-block .form-control {
+    background: transparent !important;     /* Прозрачный фон */
+    color: white !important;                /* Белый текст */
+    border: none !important;                /* Без границ */
+    box-shadow: none !important;            /* Без тени */
+    padding: 12px 0;                        /* Отступы только сверху/снизу */
+    font-size: 1rem;                        /* Читаемый размер */
+    resize: vertical;                       /* Только вертикальное растяжение */
+}
+.comment-block .form-control::placeholder {
+    color: rgba(255, 255, 255, 0.65);        /* Полупрозрачный placeholder */
 }
 
-.modal-dialog {
-    max-width: 600px;
+/* Контейнер для эмодзи-пикера */
+.emoji-sidebar-container {
+    width: 250px;                           /* Фиксированная ширина */
+    flex-shrink: 0;                         /* Не сжимается */
 }
 
-.modal-content {
-    background-color: rgba(26, 26, 26, 0.95);
-    color: #ffffff;
-    border: 1px solid #333;
+/* Само окно с эмодзи */
+.emoji-sidebar {
+    height: 170px;                          /* Высота под textarea */
+    overflow-y: auto;                       /* Прокрутка */
+    background: rgba(55, 55, 55, 0.8);       /* Тёмный фон */
+    border: 1px solid #666;                 /* Граница */
+    border-radius: 12px;                    /* Скругление */
+    padding: 10px;                          /* Отступы */
+    backdrop-filter: blur(8px);             /* Размытие */
+    margin-left: -1px;                      /* Пододвигаем вплотную к textarea */
+}
+
+/* Сетка эмодзи */
+.emoji-grid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);  /* 6 колонок */
+    gap: 6px;                               /* Расстояние между эмодзи */
+}
+
+/* Один эмодзи */
+.emoji {
+    font-size: 1.35rem;                     /* Размер иконки */
+    text-align: center;
+    padding: 5px;
     border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.18s ease;             /* Плавная анимация */
+    user-select: none;                      /* Нельзя выделить */
+}
+.emoji:hover {
+    background: rgba(255, 255, 255, 0.28);  /* Подсветка */
+    transform: scale(1.32);                 /* Увеличение */
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5); /* Тень */
 }
 
-.modal-header {
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    background-color: #1c1c1c;
-}
-
-.modal-footer {
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
-    background-color: #1c1c1c;
-}
-
-.modal-title {
-    color: #ffffff;
-}
-
-.modal-body {
-    max-height: 70vh;
-    overflow-y: auto;
-    padding: 20px;
-    white-space: pre-wrap;
-}
-
-.modal-body .form-control {
-    background-color: rgba(204, 204, 204, 0.3);
-    color: #ffffff;
-    border: 1px solid #444;
-    border-radius: 4px;
-}
-
-.modal-body .form-control:focus {
-    border-color: #ff6600;
-    box-shadow: 0 0 5px rgba(255, 102, 0, 0.5);
-    outline: none;
-}
-
-.modal-body label {
-    font-size: 0.9rem;
-    margin-bottom: 0.25rem;
-}
-
-@media (max-width: 576px) {
-    .modal-dialog {
-        margin: 0;
-        width: 100%;
-        max-width: none;
-        height: 100vh;
-    }
-    .modal-content {
-        height: 100%;
-        border-radius: 0;
-    }
-    .modal-body {
-        max-height: none;
-        overflow-y: auto;
-    }
-}
-
-.confirm-modal .modal-dialog {
-    max-width: 400px;
-}
-
-/* ==========================================================================
-   СЕКЦИЯ 11: СТИЛИ ДЛЯ КОЛЛАПСА
-   ========================================================================== */
-.collapse {
-    margin-top: 10px;
-}
-
-/* ==========================================================================
-   СЕКЦИЯ 12: СТИЛИ ДЛЯ ТРЕКОВ И КОММЕНТАРИЕВ
-   ========================================================================== */
-.track .album-image {
-    max-width: 110px;
-    max-height: 110px;
-    background: rgba(44, 44, 44, 0.3);
-    border-radius: 5px;
-}
-
-.comment img {
-    max-width: 110px;
-    background: rgba(44, 44, 44, 0.3);
-    border-radius: 5px;
-}
-
-/* ==========================================================================
-   СЕКЦИЯ 13: СТИЛИ ДЛЯ МЕНЮ ПОДПИСОК
-   ========================================================================== */
-.following-list {
-    max-height: 200px;
-    overflow-y: auto;
-    padding: 10px;
-    background-color: rgba(0, 0, 0, 0.7);
-    border-radius: 4px;
-    margin-top: 10px;
-}
-
-.following-list li {
-    padding: 5px 10px;
-    font-size: 0.9rem;
-    color: #ffffff;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.following-list li:last-child {
-    border-bottom: none;
-}
-
-.following-list li:hover {
-    background-color: rgba(255, 102, 0, 0.2);
-    color: #ff6600;
-}
-
-.profile-list {
-    list-style: none;
-    padding: 0;
-}
-
-.profile-list li {
-    padding: 5px 10px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    font-size: 0.9rem;
-}
-
-.profile-list li:last-child {
-    border-bottom: none;
-}
-
-.profile-list li a {
-    color: #ffffff;
-    text-decoration: none;
-}
-
-.profile-list li a:hover {
-    color: #ff6600;
-}
-
-/* Явное скрытие dropdown-menu */
-.dropdown-menu {
-    display: none !important;
-}
-.dropdown-menu.show {
-    display: block !important;
-}
-
-
-.text-muted {
-    color: #fdfdfd !important; /* Синий цвет, !important повышает приоритет */
-}
-
-
-
-/* Стили для карточек и выравнивания */
-.card {
-    border: none;
+/* Кастомный скроллбар */
+.emoji-sidebar::-webkit-scrollbar { width: 5px; }
+.emoji-sidebar::-webkit-scrollbar-track { background: transparent; }
+.emoji-sidebar::-webkit-scrollbar-thumb {
+    background: #999;
     border-radius: 10px;
-    overflow: hidden;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
-.card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
-}
+/* ==========================================================================
+   СЕКЦИЯ 11: ДОПОЛНИТЕЛЬНЫЕ СТИЛИ
+   ========================================================================== */
+.text-muted { color: #fdfdfd !important; }  /* Переопределение серого цвета */
 
-.card p, .card h4 {
-    margin-bottom: 1rem;
-}
-
-.col-md-6 .card {
-    min-height: 700px; /* Убедимся, что карточки выровнены по высоте */
-}
-
+/* Кнопки "Файл + Отправить" */
 .input-group {
     background-color: rgba(204, 204, 204, 0.3);
     border: 1px solid #444;
     border-radius: 4px;
     padding: 5px;
+    display: flex;
 }
-
 .input-group input, .input-group textarea {
     background: transparent;
     border: none;
     color: #ffffff;
-    width: 100%;
+    flex: 1;
 }
-
 .input-group input:focus, .input-group textarea:focus {
     outline: none;
     box-shadow: none;
 }
 
-.btn-lg {
-    padding: 12px 24px;
-    font-size: 1.1rem;
-}
-
-.list-unstyled li {
-    transition: background-color 0.3s ease;
-}
-
-.list-unstyled li:hover {
-    background-color: rgba(255, 102, 0, 0.1);
-}
-
-/* Адаптивность */
-@media (max-width: 768px) {
-    .col-md-6 {
-        flex: 0 0 100%;
-        max-width: 100%;
-    }
-    .card {
-        margin-bottom: 20px;
-    }
-    .col-md-6 .mb-4 {
-        margin-top: 0;
-    }
-    .btn-lg {
-        width: 100%;
-        margin-bottom: 10px;
-    }
-}
-
-
-
+/* Спиннер загрузки */
 .spinner {
     display: none;
-    width: 20px;
-    height: 20px;
+    width: 20px; height: 20px;
     border: 3px solid #fff;
     border-top: 3px solid #ff6600;
     border-radius: 50%;
     animation: spin 1s linear infinite;
     margin-left: 10px;
 }
+.spinner-active { display: inline-block; }
 
-.spinner-active {
-    display: inline-block;
-}
+@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-}
-
-.validation-message {
-    font-size: 0.9rem;
-    margin-top: 5px;
-}
-
-.text-success {
-    color: #28a745;
-}
-
-.text-danger {
-    color: #dc3545;
-}
-
-.like-btn {
-    transition: all 0.2s ease;
-}
-
+/* Лайки */
 .like-btn.liked {
     background-color: #dc3545 !important;
     border-color: #dc3545 !important;
     color: white !important;
 }
+.like-btn:hover { transform: scale(1.1); }
 
-.like-btn:hover {
-    transform: scale(1.1);
+/* Адаптивность */
+@media (max-width: 768px) {
+    .comment-block .d-flex { flex-direction: column; }
+    .emoji-sidebar-container { width: 100%; margin-top: 1rem; }
+    .emoji-sidebar { height: 150px; }
 }
