@@ -72,43 +72,35 @@
             </div>
         </div>
 
+
+
+
+
         <!-- Комментарии -->
-        <h3 class="mt-5 mb-3">Комментарии</h3>
-        {% for comment in page_obj %}
-            <div class="mb-3 border-bottom pb-2 d-flex align-items-start" style="background: rgba(44, 44, 44, 0.3); border-radius: 5px; padding: 10px;">
-                <img src="{% if comment.user.profile.photo %}{{ comment.user.profile.photo.url }}{% else %}{{ MEDIA_URL }}images/default-avatar.png{% endif %}" 
-                     alt="{{ comment.user.username }}" 
-                     style="width: 40px; height: 40px; border-radius: 50%; margin-right: 10px;">
-                <div class="flex-grow-1">
-                    <p class="mb-1">
-                        <strong>{{ comment.user.username }}</strong>: {{ comment.content|linebreaks }} 
-                        <small class="text-muted">({{ comment.created_at|date:"d.m.Y H:i" }})</small>
-                    </p>
-                    {% if comment.image %}
-                        <img src="{{ comment.image.url }}" alt="Comment image" style="max-width: 110px; margin-top: 5px;">
-                    {% endif %}
-                    {% for reply in comment.replies.all %}
-                        <div class="ms-3 mt-2 d-flex align-items-start">
-                            <img src="{% if reply.user.profile.photo %}{{ reply.user.profile.photo.url }}{% else %}{{ MEDIA_URL }}images/default-avatar.png{% endif %}" 
-                                 alt="{{ reply.user.username }}" 
-                                 style="width: 30px; height: 30px; border-radius: 50%; margin-right: 10px;">
-                            <p class="mb-1">
-                                [Reply] <strong>{{ reply.user.username }}</strong>: {{ reply.content|linebreaks }}
-                                <small class="text-muted">({{ reply.created_at|date:"d.m.Y H:i" }})</small>
-                            </p>
-                        </div>
-                    {% endfor %}
-                </div>
-                <button class="btn btn-link p-0 ms-2 like-comment-btn" data-comment-id="{{ comment.id }}" data-liked="{% if user.is_authenticated and user in comment.liked_by.all %}true{% else %}false{% endif %}">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="{% if user.is_authenticated and user in comment.liked_by.all %}#ff5733{% else %}#ffffff{% endif %}" class="bi bi-heart-fill heart-icon" viewBox="0 0 16 16">
-                        <path fill-rule="evenodd" d="M8 1.314C12.438-3.248 23.534 4.735 8 15-7.534 4.736 3.562-3.248 8 1.314z"/>
-                    </svg>
-                    <span class="like-count">{{ comment.liked_by.count }}</span>
-                </button>
+        <!-- ПОДСЧЁТ КОММЕНТАРИЕВ -->
+        <div class="d-flex align-items-center justify-content-between mb-3">
+            <h3 class="mt-5 mb-0">Комментарии</h3>
+            <div class="comment-count-badge badge bg-secondary text-white px-3 py-2 rounded-pill d-flex align-items-center gap-2">
+                <span id="comment-count-value">{{ page_obj.paginator.count }}</span>
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-chat-dots" viewBox="0 0 16 16">
+                    <path d="M2.5 2a.5.5 0 0 0-.5.5v9a.5.5 0 0 0 .5.5h11a.5.5 0 0 0 .5-.5v-9a.5.5 0 0 0-.5-.5h-11zM1 2.5A1.5 1.5 0 0 1 2.5 1h11A1.5 1.5 0 0 1 15 2.5v9a1.5 1.5 0 0 1-1.5 1.5h-11A1.5 1.5 0 0 1 1 11.5v-9z"/>
+                    <circle cx="5" cy="8" r="1.5"/>
+                    <circle cx="8" cy="8" r="1.5"/>
+                    <circle cx="11" cy="8" r="1.5"/>
+                </svg>
             </div>
-        {% empty %}
-            <p class="text-muted">Нет комментариев.</p>
-        {% endfor %}
+        </div>
+
+        <div class="comments-container" id="comments-container">
+            {% for comment in page_obj %}
+                {% include 'vibemusic/partials/comment_item.html' with comment=comment user=user %}
+            {% empty %}
+                <p class="text-muted">Нет комментариев.</p>
+            {% endfor %}
+        </div>
+
+
+
 
         <!-- Пагинация -->
         {% if page_obj.has_other_pages %}
@@ -201,6 +193,7 @@
 </script>
 <script src="{% static 'vibemusic/js/control_of_likes.js' %}"></script>
 <script src="{% static 'vibemusic/js/emoji_picker.js' %}"></script>
+<script src="{% static 'vibemusic/js/add_comment.js' %}"></script>
 <script src="{% static 'vibemusic/js/music_player.js' %}"></script>
 
 {% endblock %}

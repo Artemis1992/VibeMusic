@@ -1,0 +1,48 @@
+<div class="comment-item mb-3 p-3 rounded-3 position-relative" 
+     style="background: rgba(44,44,44,0.6); border-left: 3px solid #ff6600;">
+    <div class="d-flex align-items-start gap-3">
+        <img src="{% if comment.user.profile.photo %}{{ comment.user.profile.photo.url }}{% else %}{{ MEDIA_URL }}images/default-avatar.png{% endif %}" 
+             class="rounded-circle flex-shrink-0" style="width: 40px; height: 40px; object-fit: cover;">
+        <div class="flex-grow-1 min-width-0">
+            <div class="d-flex align-items-center gap-2 mb-1">
+                <strong class="text-white">{{ comment.user.username }}</strong>
+                <small class="text-muted">({{ comment.created_at|date:"d.m.Y H:i" }})</small>
+            </div>
+            <div class="comment-content text-white mb-2">{{ comment.content|safe }}</div>
+            {% if comment.image %}
+                <img src="{{ comment.image.url }}" class="mt-1 rounded mb-2" style="max-width: 110px; border-radius: 6px;">
+            {% endif %}
+            {% for reply in comment.replies.all %}
+                <div class="reply-item mt-2 p-2 rounded" 
+                     style="background: rgba(60,60,60,0.4); border-left: 2px solid #ff8c42; margin-left: 10px;">
+                    <div class="d-flex align-items-start gap-2">
+                        <img src="{% if reply.user.profile.photo %}{{ reply.user.profile.photo.url }}{% else %}{{ MEDIA_URL }}images/default-avatar.png{% endif %}" 
+                             class="rounded-circle flex-shrink-0" style="width: 30px; height: 30px; object-fit: cover;">
+                        <div class="flex-grow-1 min-width-0">
+                            <div class="d-flex align-items-center gap-2 mb-1">
+                                <strong class="text-white small">{{ reply.user.username }}</strong>
+                                <small class="text-muted">({{ reply.created_at|date:"d.m.Y H:i" }})</small>
+                            </div>
+                            <div class="comment-content text-white small">{{ reply.content|safe }}</div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+        <!-- ЛАЙК КОММЕНТАРИЯ -->
+        <div class="d-flex flex-column align-items-center ms-auto">
+            <button class="btn btn-link p-0 like-comment-btn" 
+                    data-comment-id="{{ comment.id }}"
+                    data-liked="{% if user in comment.liked_by.all %}true{% else %}false{% endif %}">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" 
+                    fill="{% if user in comment.liked_by.all %}#ff5733{% else %}#888{% endif %}" 
+                    class="bi bi-heart-fill heart-icon" viewBox="0 0 16 16">
+                    <path fill-rule="evenodd" d="M8 1.314C12.438-3.248 23.534 4.735 8 15-7.534 4.736 3.562-3.248 8 1.314z"/>
+                </svg>
+                <span class="like-count text-muted small mt-1">
+                    {{ comment.liked_by.count }}
+                </span>
+            </button>
+        </div>
+    </div>
+</div>

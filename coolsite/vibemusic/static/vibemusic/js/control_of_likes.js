@@ -4,7 +4,6 @@ document.addEventListener('DOMContentLoaded', function () {
     async function toggleLike(type, id, button) {
         if (!button || button.classList.contains('disabled')) return;
 
-        // CSRF токен: из window.csrfToken (из шаблона) или из кук
         const csrfToken = window.csrfToken ||
                          document.querySelector('[name=csrfmiddlewaretoken]')?.value ||
                          getCookie('csrftoken');
@@ -16,6 +15,8 @@ document.addEventListener('DOMContentLoaded', function () {
         const icon = button.querySelector('.heart-icon');
         const countSpan = button.querySelector('.like-count');
         button.classList.add('disabled');
+
+        console.log('Отправка лайка:', type, id); // ← ЛОГИРОВАНИЕ
 
         try {
             const response = await fetch(`/api/v1/like/${type}/`, {
@@ -33,10 +34,11 @@ document.addEventListener('DOMContentLoaded', function () {
             }
 
             const data = await response.json();
+            console.log('Ответ сервера:', data); // ← ЛОГИРОВАНИЕ
 
             // Обновляем UI
             if (icon) {
-                icon.style.fill = data.liked ? '#ff5733' : '#ffffff';
+                icon.style.fill = data.liked ? '#ff5733' : (type === 'comment' ? '#888' : '#ffffff');
             }
             if (countSpan) {
                 countSpan.textContent = data.count;
@@ -44,8 +46,8 @@ document.addEventListener('DOMContentLoaded', function () {
             button.setAttribute('data-liked', data.liked);
 
             // Анимация
-            button.style.transform = 'scale(1.3)';
-            setTimeout(() => button.style.transform = '', 150);
+            button.style.transform = 'scale(1.4)';
+            setTimeout(() => button.style.transform = '', 180);
 
         } catch (error) {
             console.error('Ошибка лайка:', error);
@@ -55,7 +57,6 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    // Вспомогательная функция для чтения куки
     function getCookie(name) {
         let cookieValue = null;
         if (document.cookie && document.cookie !== '') {
@@ -71,25 +72,24 @@ document.addEventListener('DOMContentLoaded', function () {
         return cookieValue;
     }
 
-    // Делегирование кликов
+    // === ДЕЛЕГИРОВАНИЕ КЛИКОВ (ИСПРАВЛЕНО) ===
     document.addEventListener('click', function (e) {
         const btn = e.target.closest('.like-post-btn, .like-track-btn, .like-comment-btn');
         if (!btn) return;
 
         e.preventDefault();
-        e.stopPropagation();
 
         let type, id;
 
         if (btn.classList.contains('like-post-btn')) {
             type = 'post';
-            id = btn.dataset.postId;  // ← dataset.postId → data-post-id
+            id = btn.getAttribute('data-post-id');
         } else if (btn.classList.contains('like-track-btn')) {
             type = 'track';
-            id = btn.dataset.trackId; // ← dataset.trackId → data-track-id
+            id = btn.getAttribute('data-track-id');
         } else if (btn.classList.contains('like-comment-btn')) {
             type = 'comment';
-            id = btn.dataset.commentId; // ← dataset.commentId → data-comment-id
+            id = btn.getAttribute('data-comment-id');
         }
 
         if (!id) {

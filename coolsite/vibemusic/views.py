@@ -306,20 +306,46 @@ class PostCreateView(DataMixin, LoginRequiredMixin, ProfileContextMixin, CreateV
         return {**context, **extra_context}                                    # Объединяем контексты и возвращаем
 
 
+
+from django.template.loader import render_to_string
+
 class AddCommentView(LoginRequiredMixin, View):
     def post(self, request, post_slug, *args, **kwargs):
-        post = get_object_or_404(Post, slug=post_slug)                         # Находим пост по slug или возвращаем 404
-        form = CommentForm(request.POST, request.FILES)                        # Создаём форму с данными из запроса
-        if form.is_valid():                                                    # Проверяем валидность формы
-            comment = form.save(commit=False)                                  # Создаём комментарий без сохранения в БД
-            comment.post = post                                                # Привязываем комментарий к посту
-            comment.user = request.user                                        # Устанавливаем текущего пользователя автором
-            comment.save()                                                     # Сохраняем комментарий в базу данных
-            messages.success(request, "Комментарий успешно добавлен!")         # Добавляем сообщение об успехе
-            return redirect('vibemusic:post_detail', post_slug=post.slug)      # Перенаправляем на страницу поста
-        else:
-            messages.error(request, "Ошибка при добавлении комментария.")      # Добавляем сообщение об ошибке
-            return redirect('vibemusic:post_detail', post_slug=post.slug)      # Перенаправляем на страницу поста
+        post = get_object_or_404(Post, slug=post_slug)
+        form = CommentForm(request.POST, request.FILES)
+
+        if form.is_valid():
+            comment = form.save(commit=False)
+            comment.post = post
+            comment.user = request.user
+            comment.save()
+
+            # === Подсчёт комментариев ===
+            comment_count = post.comments.count()
+
+            # === Рендерим HTML комментария ===
+            comment_html = render_to_string(
+                'vibemusic/partials/comment_item.html',
+                {
+                    'comment': comment,
+                    'user': request.user
+                },
+                request=request
+            )
+
+            # === Возвращаем JSON ===
+            return JsonResponse({
+                'success': True,
+                'comment_html': comment_html,
+                'comment_count': comment_count
+            })
+
+        # === Ошибки формы ===
+        return JsonResponse({
+            'success': False,
+            'errors': form.errors
+        })
+    
 
 class TelegramWebhookView(View):
     def post(self, request, *args, **kwargs):
