@@ -1,3 +1,5 @@
+{% comment %} vibemusic/partials/comment_item.html {% endcomment %}
+
 <div class="comment-item mb-3 p-3 rounded-3 position-relative" 
      style="background: rgba(44,44,44,0.6); border-left: 3px solid #ff6600;">
     <div class="d-flex align-items-start gap-3">
@@ -8,10 +10,16 @@
                 <strong class="text-white">{{ comment.user.username }}</strong>
                 <small class="text-muted">({{ comment.created_at|date:"d.m.Y H:i" }})</small>
             </div>
-            <div class="comment-content text-white mb-2">{{ comment.content|safe }}</div>
+
+            <!-- ПРОСТОЕ РЕШЕНИЕ: |linebreaks + inline style -->
+            <div class="comment-content text-white mb-2" style="white-space: pre-wrap !important; word-break: break-word !important; line-height: 1.5;">
+                {{ comment.content|safe }}
+            </div>
+
             {% if comment.image %}
                 <img src="{{ comment.image.url }}" class="mt-1 rounded mb-2" style="max-width: 110px; border-radius: 6px;">
             {% endif %}
+
             {% for reply in comment.replies.all %}
                 <div class="reply-item mt-2 p-2 rounded" 
                      style="background: rgba(60,60,60,0.4); border-left: 2px solid #ff8c42; margin-left: 10px;">
@@ -23,13 +31,16 @@
                                 <strong class="text-white small">{{ reply.user.username }}</strong>
                                 <small class="text-muted">({{ reply.created_at|date:"d.m.Y H:i" }})</small>
                             </div>
-                            <div class="comment-content text-white small">{{ reply.content|safe }}</div>
+                            <div class="comment-content text-white small" style="white-space: pre-wrap !important; word-break: break-word !important; line-height: 1.5;">
+                                {{ reply.content|safe }}
+                            </div>
                         </div>
                     </div>
                 </div>
             {% endfor %}
         </div>
-        <!-- ЛАЙК КОММЕНТАРИЯ -->
+
+        <!-- ЛАЙК -->
         <div class="d-flex flex-column align-items-center ms-auto">
             <button class="btn btn-link p-0 like-comment-btn" 
                     data-comment-id="{{ comment.id }}"

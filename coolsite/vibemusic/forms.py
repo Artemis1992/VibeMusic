@@ -9,13 +9,16 @@ from .models import Comment, Track, Profile, PostImage, Post  # Добавляе
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Submit, Layout, Field
 
+
+
+
+
 # Кастомная форма регистрации
 class RegisterForm(UserCreationForm):
     email = forms.EmailField(required=True)  # Поле email обязательно
 
 class MultipleFileInput(forms.ClearableFileInput):
     allow_multiple_selected = True  # Разрешаем множественный выбор файлов
-
 
 
     class Meta:
@@ -215,34 +218,33 @@ class PostForm(forms.ModelForm):
 
 # Форма для комментариев
 class CommentForm(forms.ModelForm):
-    class Meta:
-        model = Comment  # Используем модель Comment
-        fields = ['content', 'image']  # Поля формы комментария
+    content = forms.CharField(
+        widget=forms.Textarea(attrs={
+            'class': 'form-control',
+            'rows': 5,
+            'placeholder': 'Ваш комментарий (поддерживаются смайлики)',
+            'id': 'comment-content'
+        }),
+        strip=False,
+        required=False
+    )
 
-        widgets = {
-            'content': forms.Textarea(attrs={
-                'class': 'form-control',  # Класс Bootstrap для стиля
-                'rows': 5,  # Количество строк
-                'placeholder': 'Ваш комментарий (поддерживаются смайлики)',  # Плейсхолдер для комментария
-            }),
-            'image': forms.FileInput(attrs={
-                'class': 'form-control',  # Класс Bootstrap для стиля
-                'accept': 'image/*',  # Разрешаем только изображения
-            }),
-        }
+    class Meta:
+        model = Comment
+        fields = ['content', 'image']
 
     def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)  # Вызываем родительский конструктор
-        self.helper = FormHelper()  # Настраиваем crispy-forms
-        self.helper.form_method = 'post'  # Метод отправки формы
-        self.helper.add_input(Submit('submit', 'Отправить комментарий', css_class='btn btn-primary'))  # Кнопка отправки
+        super().__init__(*args, **kwargs)
+        self.helper = FormHelper()
+        self.helper.form_method = 'post'
+        self.helper.add_input(Submit('submit', 'Отправить комментарий', css_class='btn btn-primary'))
 
     def clean_image(self):
-        image = self.cleaned_data.get('image')  # Получаем изображение
-        if image:
-            if image.size > 5 * 1024 * 1024:  # Ограничиваем размер изображения до 5 МБ
-                raise forms.ValidationError('Размер изображения не должен превышать 5 МБ.')  # Выбрасываем ошибку
-        return image  # Возвращаем изображение
+        image = self.cleaned_data.get('image')
+        if image and image.size > 5 * 1024 * 1024:
+            raise forms.ValidationError('Размер изображения не должен превышать 5 МБ.')
+        return image    
+
 
 # Форма для загрузки трека
 class TrackUploadForm(forms.ModelForm):

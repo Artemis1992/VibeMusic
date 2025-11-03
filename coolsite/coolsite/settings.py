@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 import os
+import socket                                           # получает IP-адрес по имени хоста
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -71,6 +72,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'django.template.context_processors.media',
             ],
         },
     },
@@ -180,6 +182,7 @@ EMAIL_HOST_PASSWORD = 'qhns odzq gjxs rljx'                          # Паро�
 DEFAULT_FROM_EMAIL = 'artem.flowers1@gmail.com'
 TELEGRAM_BOT_TOKEN = '8311811025:AAGB7PfqMPakk2a68EIhhf4fmygpZh1xf7g'   # Токен телеграмм бота
 TELEGRAM_BOT_USERNAME = 'VibeMusicResetBot'                           # Username бота без @
+TELEGRAM_GROUP_CHAT_ID = -1003219535178                                # Теперь мы можем использовать Chat ID -1003219535178 для отправки сообщений через бота.
 
 # EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'        # Отправка в консоль для сообщения 
 
@@ -212,3 +215,20 @@ LOGGING = {
         },
     },
 }
+
+
+
+def is_localhost():                                     # Цель - проверить, выполняется ли код на локальном компьютере (localhost) или на удалённом сервере.
+    try:
+        hostname = socket.gethostname()                 # socket.gethostname() возвращает имя текущего компьютера или хоста, на котором выполняется код.
+        local_ip = socket.gethostbyname(hostname)       # Получаем IP-адрес текущего хоста по его имени, например 127.0.0.1 или локальный сетевой IP
+        return local_ip.startswith('127.') or local_ip.startswith('192.168.')   # Проверяем, начинается ли IP с '127.' (localhost) или '192.168.' (локальная сеть) если да — возвращаем True, значит код выполняется локально
+    except:
+        return True                                     # Если при определении IP возникла ошибка, считаем, что это localhost, и возвращаем True
+
+# Динамический SITE_URL
+if is_localhost():
+    SITE_URL = 'http://127.0.0.1:8000'
+
+else:
+    SITE_URL = 'https://your-site.com'                  # потом заменить на реальный домен когда выложу проект на сервер

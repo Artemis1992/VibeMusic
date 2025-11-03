@@ -356,7 +356,7 @@ textarea.form-control {
     color: white !important;                /* Белый текст */
     border: none !important;                /* Без границ */
     box-shadow: none !important;            /* Без тени */
-    padding: 12px 0;                        /* Отступы только сверху/снизу */
+    padding: 12px 16px !important;                        /* Отступы только сверху/снизу */
     font-size: 1rem;                        /* Читаемый размер */
     resize: vertical;                       /* Только вертикальное растяжение */
 }
@@ -438,9 +438,10 @@ textarea.form-control {
 
 /* Текст комментария — полный контроль переноса */
 .comment-content {
+    white-space: pre-wrap !important;    /* ← ВАЖНО! Сохраняет пробелы и переносы */
     word-break: break-word;                 /* Ломает длинные слова */
     overflow-wrap: anywhere;                /* Перенос в любом месте */
-    white-space: normal;                    /* Обычный перенос строк */
+    
     line-height: 1.5;                       /* Читаемость */
     margin: 0;                              /* Убирает отступы */
     font-size: 0.95rem;                     /* Чуть меньше основного */
@@ -565,4 +566,32 @@ textarea.form-control {
 #comment-count-value {
     min-width: 20px;
     text-align: center;
+}
+
+
+/* ==========================================================================
+   КОММЕНТАРИИ — ПОЛЕ ВВОДА (КАК В contact.html)
+   ========================================================================== */
+.comment-textarea {
+    width: 100%;
+    min-height: 80px;
+    padding: 12px 16px !important;
+    background: rgba(40, 40, 40, 0.92) !important;
+    color: white !important;
+    border: 1px solid #555 !important;
+    border-radius: 8px !important;
+    resize: vertical;
+    outline: none !important;
+    font-size: 1rem;
+    line-height: 1.5;
+    white-space: pre-wrap !important;
+    word-break: break-word !important;
+    box-sizing: border-box;
+    font-family: inherit;
+}
+
+.comment-textarea:focus {
+    outline: 2px solid #ff6600 !important;
+    outline-offset: -2px;
+    border-radius: 8px;
 }

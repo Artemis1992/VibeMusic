@@ -2,6 +2,7 @@
 from django.db.models import *
 from django.utils.text import slugify
 from django.core.signing import TimestampSigner
+from django.template.loader import render_to_string
 from django.core.paginator import Paginator
 from .models import *
 
@@ -108,6 +109,40 @@ class UniqueSlugGenerator:
                 slug = f"{base_slug}-{counter}"
                 counter += 1
             setattr(self.model_instance, self.slug_field, slug)
+
+
+# === Формируем сообщение для телеграма ===
+def render_telegram_new_post_message(post,site_url):
+    """
+    Рендерит сообщение для Telegram из HTML-шаблона.
+    Возвращает строку с HTML.
+    """
+    # Генерируем строку HTML для Telegram, используя шаблон 'vibemusic/telegram/new_post.html' и передавая в него контекст: сам пост (post) и базовый URL сайта без завершающего слеша (site_url.rstrip('/')), результат возвращаем как строку
+    return render_to_string(                            
+        'vibemusic/telegram/new_post.html',
+        {
+            'post': post,                               # Объект поста с данными (title, text и др.)
+            'site_url': site_url.rstrip('/')            # Убираем завершающий слеш у URL сайта
+        }
+    ).strip()                                            # Убираем пробелы и переносы в начале и конце строки
+
+
+# ДОПОЛНИТЕЛЬНО: Фото поста
+def render_telegram_new_post_message(post, site_url):
+    if post.images.exists():
+        template = 'vibemusic/telegram/new_post_with_photo.html'
+        context = {
+            'post': post,
+            'site_url': site_url.rstrip('/'),
+            'photo_url': f"{site_url}{post.images.first().image.url}"
+        }
+    else:
+        template = 'vibemusic/telegram/new_post.html'
+        context = {'post': post, 'site_url': site_url.rstrip('/')}
+
+    return render_to_string(template, context).strip()
+
+
 
 # функцию для извлечения метаданных(работа со Spotyfi)
 # ------------------------------------------------------------------------------------------------------------------------------

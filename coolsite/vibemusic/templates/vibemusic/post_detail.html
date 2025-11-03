@@ -1,4 +1,3 @@
-<!-- post_detail.html -->
 {% extends 'vibemusic/base.html' %}
 {% load static %}
 
@@ -72,12 +71,7 @@
             </div>
         </div>
 
-
-
-
-
         <!-- Комментарии -->
-        <!-- ПОДСЧЁТ КОММЕНТАРИЕВ -->
         <div class="d-flex align-items-center justify-content-between mb-3">
             <h3 class="mt-5 mb-0">Комментарии</h3>
             <div class="comment-count-badge badge bg-secondary text-white px-3 py-2 rounded-pill d-flex align-items-center gap-2">
@@ -99,9 +93,6 @@
             {% endfor %}
         </div>
 
-
-
-
         <!-- Пагинация -->
         {% if page_obj.has_other_pages %}
             <nav class="mt-4">
@@ -117,30 +108,27 @@
             </nav>
         {% endif %}
 
-        <!-- Форма комментария -->
+        <!-- Форма комментария — ВАЖНО: УБРАН form-control -->
         {% if user.is_authenticated %}
             <form method="post" action="{% url 'vibemusic:add_comment' post.slug %}" class="mt-4" enctype="multipart/form-data">
                 {% csrf_token %}
-
-                <!-- ЕДИНЫЙ БЛОК: textarea + смайлики -->
                 <div class="comment-block p-3 rounded-3 shadow-sm">
                     <div class="d-flex gap-3 align-items-start">
-                        <!-- Поле комментария -->
                         <div class="flex-grow-1">
-                            <textarea name="content" id="comment-content" class="form-control border-0" rows="5" 
-                                    placeholder="Напишите ваш комментарий... (смайлики справа)" 
-                                    style="resize: vertical; background: transparent;"></textarea>
+                            <textarea 
+                                name="content" 
+                                id="comment-content" 
+                                class="comment-textarea" 
+                                rows="5" 
+                                placeholder="Напишите ваш комментарий... (смайлики справа)" 
+                                required></textarea>
                         </div>
-
-                        <!-- Окно смайликов -->
                         <div class="emoji-sidebar-container">
                             <div class="emoji-sidebar">
                                 {% include 'vibemusic/partials/emoji_picker.html' %}
                             </div>
                         </div>
                     </div>
-
-                    <!-- Кнопки под всем блоком -->
                     <div class="input-group mt-3">
                         <input type="file" name="image" id="comment-image" class="form-control" accept="image/*">
                         <button type="submit" class="btn btn-primary">Отправить</button>
@@ -150,6 +138,7 @@
         {% else %}
             <p class="text-muted mt-3"><a href="{% url 'login' %}" class="text-white">Войдите</a>, чтобы оставить комментарий.</p>
         {% endif %}
+
         <!-- Модальные окна -->
         <div class="modal fade" id="postContentModal" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog modal-lg">
@@ -185,7 +174,6 @@
     </div>
 </div>
 
-<!-- Подключение стилей и скриптов -->
 <link rel="stylesheet" href="{% static 'vibemusic/css/emoji_picker.css' %}">
 
 <script>

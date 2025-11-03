@@ -1,0 +1,18 @@
+{% comment %} vibemusic/telegram/new_post_with_photo.html{% endcomment %}
+
+<b>🎧 Vibe Music</b>
+
+<b>{{ post.title }}</b>
+
+{% if photo_url %}
+<img src="{{ photo_url }}" alt="{{ post.title }}" style="max-width: 600px; margin: 10px 0;">
+{% endif %}
+
+{{ post.content|truncatechars:300 }}{% if post.content|length > 300 %}...{% endif %}
+
+<i>Автор:</i> <b>{{ post.author.username }}</b>  
+<i>Жанр:</i> <b>{{ post.genr.name|default:"-" }}</b>
+
+<a href="{{ site_url }}/post/{{ post.slug }}/">Читать пост</a>
+
+#vibemusic #new

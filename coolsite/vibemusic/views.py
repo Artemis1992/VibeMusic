@@ -314,38 +314,42 @@ class AddCommentView(LoginRequiredMixin, View):
         post = get_object_or_404(Post, slug=post_slug)
         form = CommentForm(request.POST, request.FILES)
 
+        # ← ВСЕГДА AJAX (или обычная форма)
+        is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest' or request.POST.get('ajax')
+
         if form.is_valid():
             comment = form.save(commit=False)
             comment.post = post
             comment.user = request.user
             comment.save()
 
-            # === Подсчёт комментариев ===
             comment_count = post.comments.count()
-
-            # === Рендерим HTML комментария ===
             comment_html = render_to_string(
                 'vibemusic/partials/comment_item.html',
-                {
-                    'comment': comment,
-                    'user': request.user
-                },
+                {'comment': comment, 'user': request.user},
                 request=request
             )
 
-            # === Возвращаем JSON ===
-            return JsonResponse({
-                'success': True,
-                'comment_html': comment_html,
-                'comment_count': comment_count
-            })
+            if is_ajax:
+                return JsonResponse({
+                    'success': True,
+                    'comment_html': comment_html,
+                    'comment_count': comment_count
+                })
 
-        # === Ошибки формы ===
-        return JsonResponse({
-            'success': False,
-            'errors': form.errors
-        })
-    
+            # ← ЕСЛИ НЕ AJAX — ПЕРЕНАПРАВЛЯЕМ
+            return redirect('vibemusic:post_detail', post_slug=post.slug)
+
+        # ← ОШИБКИ
+        if is_ajax:
+            return JsonResponse({'success': False, 'errors': form.errors})
+
+        # ← ЕСЛИ НЕ AJAX — РЕНДЕРИМ СТРАНИЦУ С ОШИБКАМИ
+        return render(request, 'vibemusic/post_detail.html', {
+            'post': post,
+            'form': form,
+            'page_obj': post.comments.all(),  # или твоя пагинация
+        })    
 
 class TelegramWebhookView(View):
     def post(self, request, *args, **kwargs):
