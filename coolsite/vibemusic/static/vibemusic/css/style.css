@@ -595,3 +595,151 @@ textarea.form-control {
     outline-offset: -2px;
     border-radius: 8px;
 }
+
+/* Чтобы контент не уходил под плеер */
+.container {
+    transition: padding-bottom 0.3s ease;
+    padding-bottom: 1rem !important;
+}
+
+/* Плеер */
+.audio-player {
+    height: 60px;
+    display: flex !important;
+    align-items: center;
+}
+
+.volume-range {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 80px;
+    height: 4px;
+    background: #6c757d;
+    outline: none;
+    border-radius: 2px;
+    cursor: pointer;
+}
+
+.volume-range::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 12px;
+    height: 12px;
+    background: #1DB954;
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.volume-range::-moz-range-thumb {
+    width: 12px;
+    height: 12px;
+    background: #1DB954;
+    border-radius: 50%;
+    border: none;
+    cursor: pointer;
+}
+
+
+.progress-wrapper {
+    flex-grow: 1;
+}
+
+.custom-range {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 6px;
+    background: #6c757d;
+    border-radius: 3px;
+    cursor: pointer;
+}
+
+.custom-range::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 14px;
+    height: 14px;
+    background: #1DB954;
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.custom-range::-moz-range-thumb {
+    width: 14px;
+    height: 14px;
+    background: #1DB954;
+    border-radius: 50%;
+    border: none;
+    cursor: pointer;
+}
+
+#mode-btn svg {
+    opacity: 0.6;
+    transition: opacity 0.2s ease;
+}
+
+#mode-btn svg[style*="opacity: 1"] {
+    opacity: 1 !important;
+}
+
+/* ИКОНКИ С УВЕДОМЛЕНИЯМИ */
+.icon-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 8px;
+    margin: 0;
+    position: relative;
+    transition: transform 0.2s ease;
+}
+
+.icon-button:hover {
+    transform: scale(1.15);
+}
+
+.icon {
+    width: 28px;
+    height: 28px;
+    filter: drop-shadow(0 1px 2px rgba(0,0,0,0.2));
+}
+
+#notification {
+    position: fixed;
+    bottom: 80px; /* выше плеера */
+    left: 50%;
+    transform: translateX(-50%);
+    background: #222;
+    color: white;
+    padding: 12px 24px;
+    border-radius: 50px;
+    font-size: 15px;
+    font-weight: 500;
+    box-shadow: 0 6px 16px rgba(0,0,0,0.2);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.4s ease, visibility 0.4s ease, transform 0.4s ease;
+    z-index: 1100;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,0.1);
+}
+
+#notification.show {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(-50%) translateY(-8px);
+}
+
+#notification .icon-small {
+    width: 20px;
+    height: 20px;
+}
+
+#mode-btn .mode-icon {
+    opacity: 0.6;
+    transition: opacity 0.4s ease;
+}
+
+#mode-btn .mode-icon[style*="display: block"] {
+    opacity: 1 !important;
+}

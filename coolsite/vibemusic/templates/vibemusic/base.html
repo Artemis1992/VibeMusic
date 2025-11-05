@@ -1,5 +1,3 @@
-<!--base.html-->
-
 {% load static %}
 <!DOCTYPE html>
 <html lang="ru">
@@ -9,17 +7,17 @@
     <meta http-equiv="Content-Security-Policy" content="script-src 'self' https://cdn.jsdelivr.net 'unsafe-eval';">
     <title>{% block title %}Vibe Music{% endblock %}</title>
 
-    <!-- 1. Bootstrap CSS -->
+    <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
 
-    <!-- 2. ТВОЙ CSS ПОСЛЕ BOOTSTRAP — КРИТИЧНО! -->
+    <!-- Твой CSS -->
     <link rel="stylesheet" href="{% static 'vibemusic/css/style.css' %}">
-
     <link rel="icon" href="{% static 'vibemusic/favicon.ico' %}">
 </head>
 <body {% if background_image %}data-background-image="{{ background_image }}"{% endif %}>
-    <!-- Выносим nav вне header для правильного fixed-top (исправление сдвига меню) -->
+
+    <!-- Навбар -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-transparent fixed-top">
         <div class="container">
             <a class="navbar-brand" href="{% url 'vibemusic:home' %}">Vibe Music</a>
@@ -50,45 +48,16 @@
         </div>
     </nav>
 
-    <!-- Шапка с изображением и меню -->
-    <header class="header" style="position: relative; height: 400px; z-index: 1; margin-top: 0;"> <!-- Убрал margin-top: 60px для подъема шапки -->
-        {% if post %}
-            <!-- Для страницы поста: фото исполнителя -->
-            <div style="background-image: url('{% if post.artist and post.artist.photo %}{{ post.artist.photo.url }}{% else %}{% static 'vibemusic/images/placeholder.jpg' %}{% endif %}'); height: 100%; width: 100%; position: absolute; top: 0; left: 0; background-size: cover; background-position: 50% 10%; filter: brightness(0.9); z-index: -1;">
-            </div>
-            <div class="container h-100 d-flex flex-column justify-content-end"> <!-- Изменил на justify-content-end, чтобы опустить header-title вниз -->
-                <!-- Заголовок поста -->
-                <div class="header-title header-title-animated text-white p-3 header-title-bottom"> <!-- Добавил класс для явного позиционирования вниз -->
-                    <h1>{{ post.title }}</h1>
-                    <div class="d-flex align-items-center gap-3">
-                        {% if post.artist %}
-                            <p class="mb-0"><a href="{% url 'vibemusic:artist_detail' post.artist.id %}" class="text-white text-decoration-none">{{ post.artist.name }}</a></p>
-                        {% else %}
-                            <p class="mb-0">Неизвестный автор</p>
-                        {% endif %}
-                        {% if artist_bio %}
-                            <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#artistBioModal">Биография</button>
-                        {% endif %}
-                        <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#postContentModal">О творчестве</button>
-                    </div>
-                </div>
-            </div>
-        {% else %}
-            <!-- Для главной, жанров и других страниц -->
+    <!-- ШАПКА — ТОЛЬКО КАРКАС -->
+    <header class="header" style="position: relative; height: 400px; z-index: 1;">
+        {% block header_content %}
+            <!-- По умолчанию — общий фон -->
             <div style="
-                background-image: url('{% if background_image %}{{ background_image }}{% else %}{{ site_settings.header_image.url|default:'/static/vibemusic/images/placeholder.jpg' }}{% endif %}');
+                background-image: url('{{ site_settings.header_image.url|default:'/static/vibemusic/images/placeholder.jpg' }}');
                 height: 100%; width: 100%; position: absolute; top: 0; left: 0;
-                background-size: cover; background-position: 50% 20%; filter: brightness(0.7); z-index: -1;
+                background-size: cover; background-position: center; filter: brightness(0.7); z-index: -1;
             "></div>
-            <div class="container h-100">
-                <!-- Можно добавить заголовок жанра здесь, если нужно -->
-                {% if genre %}
-                    <div class="header-title text-white p-3">
-                        <h1>{{ genre.name }}</h1>
-                    </div>
-                {% endif %}
-            </div>
-        {% endif %}
+        {% endblock %}
     </header>
 
     <!-- Основной контент -->
@@ -109,10 +78,11 @@
         <p>© 2025 Vibe Music. Все права защищены.</p>
     </footer>
 
-
-</body>
+    <!-- Скрипты -->
     <script>
-    var csrfToken = "{{ csrf_token }}";
+        var csrfToken = "{{ csrf_token }}";
     </script>
     <script src="{% static 'vibemusic/js/control_of_likes.js' %}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
 </html>

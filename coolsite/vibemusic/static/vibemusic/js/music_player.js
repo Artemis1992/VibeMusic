@@ -1,14 +1,13 @@
-// music_player.js
+// vibemusic/static/vibemusic/js/music_player.js
 document.addEventListener('DOMContentLoaded', () => {
-    // Установка фонового изображения
+    // === ФОН ===
     const backgroundImage = document.body.dataset.backgroundImage;
     if (backgroundImage) {
         document.body.classList.add('dynamic-background');
         document.body.style.setProperty('--background-image', `url(${backgroundImage})`);
     }
 
-    // Элементы плеера
-    const covers = document.querySelectorAll('.album-cover');
+    // === ЭЛЕМЕНТЫ ПЛЕЕРА ===
     const audioPlayer = document.querySelector('.audio-player');
     const audio = audioPlayer?.querySelector('.audio-element');
     const source = audio?.querySelector('source');
@@ -17,200 +16,280 @@ document.addEventListener('DOMContentLoaded', () => {
     const playIcon = playPauseBtn?.querySelector('.play-icon');
     const pauseIcon = playPauseBtn?.querySelector('.pause-icon');
     const downloadBtn = document.getElementById('download-btn');
-    let currentTrack = null;
-    let isSeeking = false;
+    const mainContainer = document.querySelector('.container');
+    const prevBtn = document.querySelector('.prev-track-btn');
+    const nextBtn = document.querySelector('.next-track-btn');
+    const volumeControl = document.getElementById('volume');
+    const modeBtn = document.getElementById('mode-btn');
+    const modeIcons = {
+        repeatOne: modeBtn?.querySelector('.repeat-one'),
+        repeatAll: modeBtn?.querySelector('.repeat-all'),
+        shuffle: modeBtn?.querySelector('.shuffle')
+    };
 
-    if (!audioPlayer || !audio || !progress || !playPauseBtn || !playIcon || !pauseIcon || !downloadBtn) {
-        console.error('Required elements not found:', { audioPlayer, audio, progress, playPauseBtn, playIcon, pauseIcon, downloadBtn });
+    let currentTrack = null;
+    let currentIndex = -1;
+    let trackList = [];
+    let isSeeking = false;
+    let playbackMode = 'repeat-all'; // по умолчанию — повтор плейлиста
+
+    // === ПРОВЕРКА ЭЛЕМЕНТОВ ===
+    if (!audioPlayer || !audio || !source || !progress || !playPauseBtn || 
+        !playIcon || !pauseIcon || !downloadBtn || !volumeControl || !modeBtn) {
+        console.error('Player elements not found');
         return;
     }
 
-    // Изначально отключить ползунок
-    progress.disabled = true;
-
-    // Обработчик кликов по трекам
-    covers.forEach(cover => {
-        const playButton = cover.querySelector('.play-button');
-        const playIconCover = cover.querySelector('.play-icon');
-        const pauseIconCover = cover.querySelector('.pause-icon');
-        const audioSrc = cover.getAttribute('data-src');
-
-        if (!playButton || !playIconCover || !pauseIconCover || !audioSrc) {
-            console.error('Missing elements or data-src:', { playButton, playIconCover, pauseIconCover, audioSrc });
-            return;
+    // === ОТСТУП ДЛЯ КОНТЕНТА ===
+    const PLAYER_HEIGHT = 60;
+    const updatePadding = (show) => {
+        if (mainContainer) {
+            mainContainer.style.paddingBottom = show ? `${PLAYER_HEIGHT + 20}px` : '1rem';
         }
+    };
+
+    audioPlayer.style.display = 'none';
+    updatePadding(false);
+
+    // === ГРОМКОСТЬ ===
+    volumeControl.addEventListener('input', () => {
+        audio.volume = volumeControl.value / 100;
+    });
+
+    // === СБОР ТРЕКОВ И КЛИК ПО ОБЛОЖКЕ ===
+    document.querySelectorAll('.album-cover').forEach((cover, index) => {
+        const playButton = cover.querySelector('.play-button');
+        const audioSrc = cover.dataset.src;
+
+        if (!playButton || !audioSrc) return;
 
         playButton.addEventListener('click', () => {
-            console.log('Clicked track:', audioSrc);
+            currentIndex = index;
             if (currentTrack !== audioSrc) {
-                if (!audio.paused) audio.pause();
-                source.src = audioSrc;
-                downloadBtn.href = audioSrc;
-                audio.load();
-                audio.play().then(() => {
-                    console.log('Playing:', audioSrc);
-                    audioPlayer.style.display = 'block';
-                    covers.forEach(c => {
-                        const cSrc = c.getAttribute('data-src');
-                        c.querySelector('.play-icon').style.display = cSrc === audioSrc ? 'none' : 'block';
-                        c.querySelector('.pause-icon').style.display = cSrc === audioSrc ? 'block' : 'none';
-                        c.classList.toggle('playing', cSrc === audioSrc);
-                    });
+                playTrack(audioSrc);
+            } else {
+                audio.paused ? audio.play().then(syncIcons) : audio.pause();
+            }
+        });
+
+        trackList.push({ src: audioSrc, cover });
+    });
+
+    // === КНОПКА PLAY/PAUSE В ПЛЕЕРЕ ===
+    playPauseBtn.addEventListener('click', () => {
+        audio.paused ? audio.play().then(syncIcons) : audio.pause();
+    });
+
+    // === СТРЕЛКИ ПЕРЕКЛЮЧЕНИЯ ===
+    prevBtn?.addEventListener('click', () => {
+        if (currentIndex > 0) {
+            currentIndex--;
+            playTrack(trackList[currentIndex].src);
+        }
+    });
+
+    nextBtn?.addEventListener('click', () => {
+        if (currentIndex < trackList.length - 1) {
+            currentIndex++;
+            playTrack(trackList[currentIndex].src);
+        }
+    });
+
+    // === РЕЖИМЫ ВОСПРОИЗВЕДЕНИЯ ===
+    modeBtn.addEventListener('click', () => {
+        const modes = ['repeat-all', 'repeat-one', 'shuffle',];
+        const currentIdx = modes.indexOf(playbackMode);
+        playbackMode = modes[(currentIdx + 1) % modes.length];
+        updateModeIcon();
+        showModeNotification(); // ← работает!
+    });
+
+    const updateModeIcon = () => {
+        Object.values(modeIcons).forEach(icon => {
+            if (icon) icon.style.display = 'none';
+        });
+        modeBtn.querySelectorAll('svg').forEach(svg => svg.style.opacity = '0.6');
+
+        if (playbackMode === 'repeat-one' && modeIcons.repeatOne) {
+            modeIcons.repeatOne.style.display = 'block';
+            modeIcons.repeatOne.style.opacity = '1';
+        } else if (playbackMode === 'repeat-all' && modeIcons.repeatAll) {
+            modeIcons.repeatAll.style.display = 'block';
+            modeIcons.repeatAll.style.opacity = '1';
+        } else if (playbackMode === 'shuffle' && modeIcons.shuffle) {
+            modeIcons.shuffle.style.display = 'block';
+            modeIcons.shuffle.style.opacity = '1';
+        }
+    };
+
+    // === ВОСПРОИЗВЕДЕНИЕ ТРЕКА ===
+    const playTrack = (src) => {
+        const index = trackList.findIndex(t => t.src === src);
+        if (index !== -1) currentIndex = index;
+
+        source.src = src;
+        downloadBtn.href = src;
+        audio.load();
+
+        audio.play().then(() => {
+            currentTrack = src;
+            audioPlayer.style.display = 'flex';
+            updatePadding(true);
+            syncIcons();
+        }).catch(err => console.error('Play error:', err));
+    };
+
+    // === СИНХРОНИЗАЦИЯ ИКОНОК ===
+    const syncIcons = () => {
+        const isPlaying = !audio.paused;
+
+        playIcon.style.display = isPlaying ? 'none' : 'block';
+        pauseIcon.style.display = isPlaying ? 'block' : 'none';
+
+        document.querySelectorAll('.album-cover').forEach(cover => {
+            const src = cover.dataset.src;
+            const playIcon = cover.querySelector('.play-icon');
+            const pauseIcon = cover.querySelector('.pause-icon');
+
+            if (playIcon && pauseIcon) {
+                if (src === currentTrack && isPlaying) {
                     playIcon.style.display = 'none';
                     pauseIcon.style.display = 'block';
-                    currentTrack = audioSrc;
-                    progress.style.backgroundImage = `linear-gradient(to right, #1DB954 0%, #6c757d 0%)`; // Сброс при новом треке
-                }).catch(err => console.error('Play error:', err));
-            } else {
-                if (audio.paused) {
-                    audio.play().then(() => {
-                        console.log('Resuming:', audioSrc);
-                        cover.querySelector('.play-icon').style.display = 'none';
-                        cover.querySelector('.pause-icon').style.display = 'block';
-                        cover.classList.add('playing');
-                        playIcon.style.display = 'none';
-                        pauseIcon.style.display = 'block';
-                    }).catch(err => console.error('Resume error:', err));
+                    cover.classList.add('playing');
                 } else {
-                    audio.pause();
-                    console.log('Pausing:', audioSrc);
-                    cover.querySelector('.play-icon').style.display = 'block';
-                    cover.querySelector('.pause-icon').style.display = 'none';
-                    cover.classList.remove('playing');
                     playIcon.style.display = 'block';
                     pauseIcon.style.display = 'none';
+                    cover.classList.remove('playing');
                 }
             }
         });
-    });
 
-    // Кнопка Play/Pause
-    playPauseBtn.addEventListener('click', () => {
-        console.log('Play/Pause button clicked, paused:', audio.paused);
-        if (audio.paused) {
-            audio.play().then(() => {
-                console.log('Playback resumed');
-                playIcon.style.display = 'none';
-                pauseIcon.style.display = 'block';
-                if (currentTrack) {
-                    const activeCover = document.querySelector(`.album-cover[data-src="${currentTrack}"]`);
-                    if (activeCover) {
-                        activeCover.querySelector('.play-icon').style.display = 'none';
-                        activeCover.querySelector('.pause-icon').style.display = 'block';
-                        activeCover.classList.add('playing');
-                    }
-                }
-            }).catch(err => console.error('Play error:', err));
-        } else {
-            audio.pause();
-            console.log('Paused');
-            playIcon.style.display = 'block';
-            pauseIcon.style.display = 'none';
-            if (currentTrack) {
-                const activeCover = document.querySelector(`.album-cover[data-src="${currentTrack}"]`);
-                if (activeCover) {
-                    activeCover.querySelector('.play-icon').style.display = 'block';
-                    activeCover.querySelector('.pause-icon').style.display = 'none';
-                    activeCover.classList.remove('playing');
-                }
-            }
-        }
-    });
+        updatePadding(isPlaying);
+    };
 
-    // Обновление прогресса с закрашиванием
+    // === ПРОГРЕСС ===
     audio.addEventListener('timeupdate', () => {
-        if (!isSeeking && audio.duration && !isNaN(audio.duration)) {
+        if (!isSeeking && audio.duration) {
             const percent = (audio.currentTime / audio.duration) * 100;
             progress.value = percent;
             progress.style.backgroundImage = `linear-gradient(to right, #1DB954 ${percent}%, #6c757d ${percent}%)`;
-            console.log('Time update - Progress:', percent.toFixed(2), 'Background:', progress.style.backgroundImage);
         }
-    });
-
-    // Перемотка
-    progress.addEventListener('mousedown', () => {
-        isSeeking = true;
-        console.log('Seeking started');
     });
 
     progress.addEventListener('input', () => {
-        if (isSeeking && audio.readyState > 0 && audio.duration && !isNaN(audio.duration)) {
-            const percent = progress.value;
-            const seekTime = (percent / 100) * audio.duration;
-            audio.currentTime = seekTime;
-            progress.style.backgroundImage = `linear-gradient(to right, #1DB954 ${percent}%, #6c757d ${percent}%)`;
-            console.log('Seeking to:', seekTime.toFixed(2), 'Progress:', percent);
+        isSeeking = true;
+        const percent = progress.value;
+        if (audio.duration) audio.currentTime = (percent / 100) * audio.duration;
+        progress.style.backgroundImage = `linear-gradient(to right, #1DB954 ${percent}%, #6c757d ${percent}%)`;
+    });
+
+    progress.addEventListener('change', () => isSeeking = false);
+
+    // === КОНЕЦ ТРЕКА ===
+    audio.addEventListener('ended', () => {
+        if (playbackMode === 'repeat-one') {
+            audio.currentTime = 0;
+            audio.play();
+        } else if (playbackMode === 'repeat-all') {
+            if (currentIndex < trackList.length - 1) {
+                currentIndex++;
+                playTrack(trackList[currentIndex].src);
+            } else {
+                currentIndex = 0;
+                playTrack(trackList[0].src);
+            }
+        } else if (playbackMode === 'shuffle') {
+            const randomIndex = Math.floor(Math.random() * trackList.length);
+            currentIndex = randomIndex;
+            playTrack(trackList[randomIndex].src);
+        } else {
+            if (currentIndex < trackList.length - 1) {
+                currentIndex++;
+                playTrack(trackList[currentIndex].src);
+            } else {
+                audioPlayer.style.display = 'none';
+                updatePadding(false);
+                currentTrack = null;
+                currentIndex = -1;
+                progress.value = 0;
+                syncIcons();
+            }
         }
     });
 
-    progress.addEventListener('mouseup', () => {
-        isSeeking = false;
-        console.log('Seek completed');
-    });
-
-    // Листание треков
-    const nextTrack = () => {
-        if (!currentTrack) return;
-        const tracks = document.querySelectorAll('.album-cover');
-        const currentIndex = Array.from(tracks).findIndex(c => c.getAttribute('data-src') === currentTrack);
-        const nextIndex = (currentIndex + 1) % tracks.length;
-        tracks[nextIndex].querySelector('.play-button').click();
-    };
-
-    const prevTrack = () => {
-        if (!currentTrack) return;
-        const tracks = document.querySelectorAll('.album-cover');
-        const currentIndex = Array.from(tracks).findIndex(c => c.getAttribute('data-src') === currentTrack);
-        const prevIndex = (currentIndex - 1 + tracks.length) % tracks.length;
-        tracks[prevIndex].querySelector('.play-button').click();
-    };
-
-    // Поддержка клавиш (игнорировать, если модал открыт)
+    // === КЛАВИАТУРА (ПРОБЕЛ) ===
     document.addEventListener('keydown', (e) => {
-        if (document.body.classList.contains('modal-open')) {
-            console.log('Keydown ignored because modal is open');
-            return; // Игнорировать клавиши, если модал открыт
-        }
+        if (document.body.classList.contains('modal-open') || 
+            ['TEXTAREA', 'INPUT'].includes(document.activeElement.tagName)) return;
 
-        if (e.code === 'Space' && document.activeElement.tagName !== 'INPUT') {
+        if (e.code === 'Space') {
             e.preventDefault();
             playPauseBtn.click();
         }
-        if (e.code === 'ArrowRight') nextTrack();
-        if (e.code === 'ArrowLeft') prevTrack();
     });
 
-    // Обработка окончания трека
-    audio.addEventListener('ended', () => {
-        console.log('Track ended');
-        audioPlayer.style.display = 'none';
-        playIcon.style.display = 'block';
-        pauseIcon.style.display = 'none';
-        if (currentTrack) {
-            const activeCover = document.querySelector(`.album-cover[data-src="${currentTrack}"]`);
-            if (activeCover) {
-                activeCover.querySelector('.play-icon').style.display = 'block';
-                activeCover.querySelector('.pause-icon').style.display = 'none';
-                activeCover.classList.remove('playing');
-            }
+    // === ИНИЦИАЛИЗАЦИЯ ===
+    updateModeIcon();
+    syncIcons();
+
+    // ========================================
+    // УВЕДОМЛЕНИЯ — ОБЪЯВЛЯЕМ ПОСЛЕ ВСЕГО
+    // ========================================
+
+    const miniIcons = {
+        1: `<svg class="icon-small" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 4h16v2L10 16 4 10V4z"></path>
+                <path d="M4 14h16v2L10 6l-6 6v2z"></path>
+            </svg>`,
+        2: `<svg class="icon-small" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M23 4v6h-6"></path>
+                <path d="M1 20v-6h6"></path>
+                <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10"></path>
+                <path d="M20.49 15a9 9 0 0 1-14.85 3.36L1 14"></path>
+            </svg>`,
+        3: `<svg class="icon-small" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M17 3h4v4"></path>
+                <path d="M21 3l-7 7"></path>
+                <path d="M3 21l7-7"></path>
+                <path d="M7 21H3v-4"></path>
+            </svg>`
+    };
+
+    const notification = document.getElementById('notification');
+
+    const showModeNotification = () => {
+        const messages = {
+            'repeat-all': 'Повтор плейлиста',
+            'repeat-one': 'Повтор трека',
+            'shuffle': 'Случайный порядок',
+        };
+
+        const iconMap = {
+            'repeat-all': 1,
+            'repeat-one': 2,
+            'shuffle': 3,
+        };
+
+        const message = messages[playbackMode];
+        const iconId = iconMap[playbackMode];
+
+        if (notification && miniIcons[iconId]) {
+            notification.innerHTML = miniIcons[iconId] + `<span>${message}</span>`;
+            notification.classList.add('show');
+            setTimeout(() => notification.classList.remove('show'), 2000);
         }
-        currentTrack = null;
-        progress.value = 0;
-        progress.style.backgroundImage = `linear-gradient(to right, #1DB954 0%, #6c757d 0%)`;
-    });
+    };
 
-    // Логирование метаданных
-    audio.addEventListener('loadedmetadata', () => {
-        console.log('Metadata loaded:', audio.duration, 'ReadyState:', audio.readyState);
-        progress.disabled = false;
-        progress.style.backgroundImage = `linear-gradient(to right, #1DB954 0%, #6c757d 0%)`; // Сброс при загрузке
-    });
-
-    audio.addEventListener('canplay', () => {
-        console.log('Can play:', audio.duration);
-    });
-
-    audio.addEventListener('error', (e) => {
-        console.error('Audio error:', e.message);
+    // (Если будут отдельные иконки — можно оставить)
+    document.querySelectorAll('.icon-button').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const message = btn.dataset.msg;
+            const iconId = btn.dataset.icon;
+            if (notification && miniIcons[iconId]) {
+                notification.innerHTML = miniIcons[iconId] + `<span>${message}</span>`;
+                notification.classList.add('show');
+                setTimeout(() => notification.classList.remove('show'), 3000);
+            }
+        });
     });
 });
