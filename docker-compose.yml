@@ -1,0 +1,34 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: vibemusic
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - vibemusic-net
+
+  web:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      DOCKER_ENV: 1
+      POSTGRES_DB: vibemusic
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_HOST: db
+    depends_on:
+      - db
+    networks:
+      - vibemusic-net
+
+volumes:
+  postgres_data:
+
+networks:
+  vibemusic-net:
