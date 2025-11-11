@@ -4,3 +4,6 @@ from datetime import timedelta              # интервалы времени 
 
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent    # корень проекта (поднимаемся на 3 уровня вверх)
+
+SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "unisafe-secret")
+DEBUG = os.getenv("DJANGO_DEBUG", "False").lower() == "true"
