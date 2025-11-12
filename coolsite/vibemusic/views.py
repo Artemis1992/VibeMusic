@@ -1,31 +1,49 @@
 
 # vibemusic/views.py
-from django.shortcuts import render, redirect, get_object_or_404
-from django.views.generic import ListView, DetailView, CreateView, TemplateView, UpdateView
-from django.contrib.auth.tokens import default_token_generator
-from django.utils.http import urlsafe_base64_encode
-from django.utils.encoding import force_bytes
-from django.contrib.auth.mixins import LoginRequiredMixin
-from django.views.decorators.http import require_POST
-from django.http import HttpResponseRedirect
-from django.contrib.auth.views import (
-    PasswordResetView, PasswordResetDoneView, PasswordResetConfirmView, PasswordResetCompleteView,
-    LoginView,
-)
-from .models import *
-from django.contrib.auth.decorators import login_required
-from django.http import JsonResponse, HttpResponse
-from django.urls import reverse, reverse_lazy
+# stdlib
+import json
+import logging
+import re
+import threading
+
+# django
+from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import logout
-from django.db.models import Q
-from .forms import RegisterForm, CommentForm, LoginViewForm, TrackUploadForm, ProfileForm, PostForm
-from django.views import View
-from .utils import *
-import threading
-import logging
-import json
-import re
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.tokens import default_token_generator
+from django.contrib.auth.views import (
+    LoginView,
+    PasswordResetView, PasswordResetDoneView,
+    PasswordResetConfirmView, PasswordResetCompleteView,
+)
+from django.views.generic import (
+    ListView, DetailView, CreateView, TemplateView, UpdateView, DeleteView
+)
+
+from django.db.models import Q, Count, Exists, OuterRef, Value, BooleanField, Prefetch
+from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
+from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse, reverse_lazy
+from django.utils.encoding import force_bytes
+from django.utils.http import urlsafe_base64_encode
+from django.views import View, generic
+from django.views.decorators.http import require_POST
+
+# local
+from .models import *
+from .forms import (
+    RegisterForm, CommentForm, LoginViewForm,
+    TrackUploadForm, ProfileForm, PostForm,
+)
+from .core_utils import DataMixin, ProfileContextMixin
+from vibemusic.utils.telegram import (
+    unsign_telegram_connect_token,
+    send_telegram_message,
+    TelegramConnector,
+)
+
 
 logger = logging.getLogger(__name__)
 
@@ -499,7 +517,7 @@ def contact(request):
             messages.success(request, "Профиль создан автоматически!")         # Добавляем сообщение об успехе
         context['form'] = ProfileForm(instance=profile)                        # Добавляем форму профиля в контекст
         context['user_posts'] = Post.objects.filter(author=request.user)       # Добавляем посты пользователя
-        context['telegram_token'] = make_telegram_connect_token(request.user)  # Генерируем токен для Telegram
+        context['telegram_token'] = TelegramConnector(request.user)  # Генерируем токен для Telegram
         context['TELEGRAM_BOT_USERNAME'] = getattr(settings, 'TELEGRAM_BOT_USERNAME', None)  # Получаем имя бота из настроек
     return render(request, 'vibemusic/contact.html', context)                  # Рендерим шаблон с контекстом
 
@@ -516,7 +534,7 @@ class ProfileView(DataMixin, ProfileContextMixin, DetailView):
         context['user_posts'] = Post.objects.filter(author=self.object)        # Добавляем посты пользователя
         context['following'] = self.object.profile.following.all()             # Добавляем список подписок
         context['profile'] = self.object.profile                              # Добавляем объект профиля
-        context['telegram_token'] = make_telegram_connect_token(self.request.user) if self.request.user.is_authenticated else ''  # Генерируем токен для Telegram, если пользователь авторизован
+        context['telegram_token'] = TelegramConnector(self.request.user) if self.request.user.is_authenticated else ''  # Генерируем токен для Telegram, если пользователь авторизован
         context['TELEGRAM_BOT_USERNAME'] = settings.TELEGRAM_BOT_USERNAME      # Получаем имя бота из настроек
         context['activities'] = Activity.objects.filter(user=self.object)[:10] # Добавляем последние 10 активностей пользователя
         return {**context, **extra_context}                                    # Объединяем контексты и возвращаем
@@ -556,7 +574,7 @@ class UpdateProfileView(LoginRequiredMixin, ProfileContextMixin, UpdateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)                           # Получаем базовый контекст
         context['user_posts'] = Post.objects.filter(author=self.request.user)  # Добавляем посты пользователя
-        context['telegram_token'] = make_telegram_connect_token(self.request.user)  # Генерируем токен для Telegram
+        context['telegram_token'] = TelegramConnector(self.request.user)  # Генерируем токен для Telegram
         context['TELEGRAM_BOT_USERNAME'] = getattr(settings, 'TELEGRAM_BOT_USERNAME', None)  # Получаем имя бота из настроек
         return context                                                         # Возвращаем обновлённый контекст
 
@@ -628,7 +646,7 @@ class TelegramSettingsView(LoginRequiredMixin, ProfileContextMixin, DataMixin, T
         context = super().get_context_data(**kwargs)
         user_profile = self.request.user.profile
         context['user_profile'] = user_profile
-        context['telegram_token'] = make_telegram_connect_token(self.request.user)
+        context['telegram_token'] = TelegramConnector(self.request.user)
         context['TELEGRAM_BOT_USERNAME'] = getattr(settings, 'TELEGRAM_BOT_USERNAME', None)
         context['title'] = "Настройки Telegram"
         context['site_settings'] = SiteSettings.objects.first()

@@ -4,8 +4,11 @@ from django.dispatch import receiver                       # Декоратор 
 from django.contrib.auth.models import User               # Встроенная модель пользователя Django
 from .models import Profile, Post                         # Импортируем свои модели Profile и Post
 from django.conf import settings                           # Доступ к настройкам проекта (например, SITE_URL)
-from .utils import send_telegram_message, render_telegram_new_post_message  # Функции для отправки сообщений в Telegram
+from .core_utils import render_telegram_new_post_message  # Функции для отправки сообщений в Telegram
 import threading                                           # Для создания отдельного потока, чтобы не блокировать сервер
+from vibemusic.utils.telegram import (
+    send_telegram_message,
+)
 import logging
 
 logger = logging.getLogger(__name__)                     # Настраиваем логгер для этого модуля

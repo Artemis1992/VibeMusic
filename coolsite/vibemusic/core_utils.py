@@ -8,7 +8,7 @@ from .models import *
 
 from django.conf import settings
 from django.contrib import messages
-
+from vibemusic.utils.telegram import TelegramConnector
 # для работы со Spotyfi
 from mutagen.mp3 import MP3
 from mutagen.id3 import ID3
@@ -17,6 +17,8 @@ import logging
 import requests
 
 from django.utils import timezone  # Добавлено для current_datetime
+
+
 
 
 logger = logging.getLogger(__name__)
@@ -74,7 +76,7 @@ class ProfileContextMixin:
                 messages.success(self.request, "Профиль создан автоматически!")                     # Добавляем сообщение об успешном создании
             context['form'] = ProfileForm(instance=profile)                                         # Добавляем форму профиля в контекст
             context['user_posts'] = Post.objects.filter(author=self.request.user)                   # Добавляем посты пользователя
-            context['telegram_token'] = make_telegram_connect_token(self.request.user)              # Генерируем токен для Telegram
+            context['telegram_token'] = TelegramConnector(self.request.user)              # Генерируем токен для Telegram
             context['TELEGRAM_BOT_USERNAME'] = getattr(settings, 'TELEGRAM_BOT_USERNAME', None)     # Получаем имя бота из настроек
             context['following'] = profile.following.all()                                          # Добавляем подписки, если есть M2M поле
         return context                                                                              # Возвращаем обновлённый контекст
@@ -167,42 +169,6 @@ def extract_metadata(audio_file):
 
 
 
-# Функции для генерации/проверки токина и отправки сообщений 
-# -----------------------------------------------------------------------------------------------------------------------------
-def make_telegram_connect_token(user):
-    """Генерирует signed token для привязки (содержит user.pk)."""
-    return signer.sign(str(user.pk))                                        # Берем первичный ключь пользоателя, переводим в страку и генерируем криптографическую подпись защищая ее от подделки
-
-def unsign_telegram_connect_token(token, max_age=60*60*24*7):               # 7 дней валидности
-    """Проверяет и возвращает user.pk из token."""
-    try:
-        return signer.unsign(token, max_age=max_age)                        # Проверяем подлинность и "срок годности" токена, если все ОК то, Возвращаем исходный ID (или другие значение, которое было подписанно)
-    except Exception as e:
-        logger.error(f"Недействительный токен: {e}")
-        return None
-
-def send_telegram_message(chat_id, text, parse_mode='Markdown'):
-    """Отпровляет сообщение в Telegram по chat_id."""
-    if not chat_id:
-        logger.warning("Для сообщения Telegram не указан chat_id.")         # Логируем предупреждение, если chat_id не указан
-        return False
-    url = f"https://api.telegram.org/bot{settings.TELEGRAM_BOT_TOKEN}/sendMessage"   # Формируем URL для API Telegram
-    payload = {
-        'chat_id': chat_id,
-        'text': text,
-        'parse_mode': parse_mode,
-        'disable_web_page_preview': True,
-    }
-    try:
-        response = requests.post(url, json=payload, timeout=10)             # Отправляем POST-запрос к API Telegram
-        response.raise_for_status()                                         # Проверяем статус ответа
-        logger.info(f"Сообщение Telegram отправлено на chat_id {chat_id}")  # Логируем успешную отправку
-        return True
-    except requests.RequestException as e:
-        logger.error(f"Ошибка при отправке в Telegram: {e}")                # Логируем ошибку отправки
-        return False
-
-# ----------------------------------------------------------------------------------------------------------------------------
 
 
 

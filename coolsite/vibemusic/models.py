@@ -4,7 +4,7 @@ from django.conf import settings
 from django.contrib.auth.models import User
 from django.utils import timezone
 from django.utils.text import slugify                                   # только маленькие буквы, цифры, дефисы и без пробелов
-from vibemusic.utils import extract_metadata, UniqueSlugGenerator
+from vibemusic.core_utils import extract_metadata, UniqueSlugGenerator
 from vibemusic.spotify_utils import search_track, download_image
 import logging
 
@@ -245,3 +245,19 @@ class Reaction(models.Model):
         elif self.artist:
             return f"{self.user.username} liked artist {self.artist.name}"
         return f"{self.user.username} reaction"
+    
+
+class IPChangeLog(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    ip = models.CharField(max_length=45)                                            # IPv4 или IPv6
+    timestamp = models.DateTimeField(auto_now_add=True)
+    bytes_uploaded = models.BigIntegerField(default=0)                              # можно пополнять если нужно учитывать байты
+
+    class Meta:
+        indexes = [
+            models.Index(fields=["user", "timestamp"]),
+            models.Index(fields=["id", "timestamp"]),
+        ]
+
+    def __str__(self):
+        return f"({self.user_id} @ {self.ip} at {self.timestamp.isoformat()})"

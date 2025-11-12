@@ -58,6 +58,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     # 'debug_toolbar.middleware.DebugToolbarMiddleware',
+    "vibemusic.middleware.ip_logger.LogIPMiddleware",  # новый стиль
 ]
 
 ROOT_URLCONF = 'coolsite.urls'
@@ -245,3 +246,9 @@ if is_localhost():
 
 else:
     SITE_URL = 'https://your-site.com'                  # потом заменить на реальный домен когда выложу проект на сервер
+
+
+
+IP_CHANGE_WINDOW_HOURS = int(os.getenv("IP_CHANGE_WINDOW_HOURS", "1"))   # окно для подсчёта уникальных IP (часы)
+IP_CHANGE_THRESHOLD = int(os.getenv("IP_CHANGE_THRESHOLD", "3"))       # порог уник. IP в окне -> триггер
+IP_CHANGE_RESTRICTION_SECONDS = int(os.getenv("IP_CHANGE_RESTRICTION_SECONDS", str(5*3600)))  # 5 часов по умолчанию
