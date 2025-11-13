@@ -23,7 +23,7 @@ from django.views.generic import (
 )
 
 from django.db.models import Q, Count, Exists, OuterRef, Value, BooleanField, Prefetch
-from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
+from django.http import HttpResponse, HttpResponseRedirect, JsonResponse, HttpRequest
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse, reverse_lazy
 from django.utils.encoding import force_bytes
@@ -656,12 +656,12 @@ class TelegramSettingsView(LoginRequiredMixin, ProfileContextMixin, DataMixin, T
 
 class LogoutConfirmView(LoginRequiredMixin, ProfileContextMixin, DataMixin, TemplateView):
     login_url = '/login/'
-    redirect_field_name = 'redirect_to'
+    redirect_field_name = 'redirect_to'                                                 # Имя GET-параметра для URL редиректа после входа (по умолчанию — 'next')
     template_name = 'vibemusic/logout_confirm.html'
 
-    def dispatch(self, request, *args, **kwargs):
-        if not request.user.is_authenticated:
-            logger.debug("User already logged out, redirecting to home")
+    def dispatch(self, request: HttpRequest, *args, **kwargs) -> HttpResponse:
+        if not request.user.is_authenticated:                                           # авторизован ли пользователь на данный момент.
+            logger.debug("LogoutConfirmView: пользователь уже вышел, перенаправляем на главную страницу")
             return HttpResponseRedirect(reverse_lazy('vibemusic:home'))
         return super().dispatch(request, *args, **kwargs)
 
