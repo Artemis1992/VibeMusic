@@ -21,7 +21,9 @@ from django.contrib.auth.views import (
 from django.views.generic import (
     ListView, DetailView, CreateView, TemplateView, UpdateView, DeleteView
 )
-
+from .utils.ip import get_client_ip
+from .services.restrictions import user_has_active_restriction
+from .utils.ip_restriction import check_id_changes_and_maybe_restrict
 from django.db.models import Q, Count, Exists, OuterRef, Value, BooleanField, Prefetch
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse, HttpRequest
 from django.shortcuts import get_object_or_404, redirect, render
@@ -38,6 +40,7 @@ from .forms import (
     TrackUploadForm, ProfileForm, PostForm,
 )
 from .core_utils import DataMixin, ProfileContextMixin
+from .services import toggle_follow as toggle_follow_servise    # toggle_follow_service —  Сервис, который переключает подписку: подписаться / отписаться
 from vibemusic.utils.telegram import (
     unsign_telegram_connect_token,
     send_telegram_message,
@@ -154,9 +157,26 @@ class PostDetailView(DataMixin, ProfileContextMixin, DetailView):
         queryset = queryset.prefetch_related(track_prefetch, comment_prefetch)
         return queryset
 
+class PostDetailView(DataMixin, ProfileContextMixin, DetailView):
+    model = Post
+    template_name = 'vibemusic/post_detail.html'
+    slug_url_kwarg = "post_slug"
+    context_object_name = 'post'
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        # ... у тебя здесь уже есть аннотации/Prefetch — оставляем как есть ...
+        return queryset
+
     def get_context_data(self, **kwargs):
+        """
+        Формирует контекст для страницы поста:
+        - меню, фон, комментарии;
+        - флаг can_download: можно ли показывать пользователю кнопку "Скачать".
+        """
         context = super().get_context_data(**kwargs)
         extra_context = self.get_context_menu(title=context['post'].title)
+        context.update(extra_context)
 
         # Комментарии с пагинацией
         comments = self.object.comments.all().order_by('-created_at')
@@ -174,16 +194,48 @@ class PostDetailView(DataMixin, ProfileContextMixin, DetailView):
         else:
             context['background_image'] = None
 
-        context['site_settings'] = SiteSettings.objects.first()
-        return {**context, **extra_context}
-    
+        # === ОГРАНИЧЕНИЕ СКАЧИВАНИЯ ПО IP ===
+        can_download = True                # по умолчанию кнопка "Скачать" есть
+        download_restriction_ttl = 0       # сколько секунд осталось до снятия блокировки
+
+        if self.request.user.is_authenticated:
+            # user_has_active_restriction:
+            # - смотрит флаг в кэше для этого пользователя
+            # - ничего не пересчитывает, просто говорит "заблокирован / не заблокирован"
+            restricted, ttl = user_has_active_restriction(self.request.user)
+            if restricted:
+                can_download = False
+                download_restriction_ttl = ttl
+
+        context['can_download'] = can_download
+        context['download_restriction_ttl'] = download_restriction_ttl
+
+        return context
 
 
 class TrackUploadView(LoginRequiredMixin, ProfileContextMixin, CreateView):
+    """
+    Представление для загрузки треков пользователем.
+    Дополнительно проверяет, не заблокирован ли пользователь по частой смене IP.
+    """
     model = Track                                                              # Указываем модель Track для представления
     form_class = TrackUploadForm                                               # Указываем форму TrackUploadForm для ввода данных
     template_name = 'vibemusic/track_upload.html'                              # Задаём шаблон для страницы загрузки трека
     success_url = '/'                                                          # Устанавливаем URL перенаправления на главную
+
+    def dispatch(self, request, *args, **kwargs):
+        """
+        Перед любым обработчиком (GET/POST) проверяем:
+        - есть ли активная блокировка загрузок по IP;
+        - если да — не даём зайти на форму/отправить её и сообщаем пользователю.
+        """
+        if request.user.is_authenticated:
+            current_ip = get_client_ip(request)
+            restricted, ttl = check_id_changes_and_maybe_restrict(
+                user=request.user,
+                current_ip=current_ip,
+            )
+        return super().dispatch(request, *args, **kwargs)
 
     def form_valid(self, form):
         try:
@@ -202,6 +254,8 @@ class TrackUploadView(LoginRequiredMixin, ProfileContextMixin, CreateView):
         logger.warning(f"Неверная отправка формы пользователем {self.request.user.username}: {form.errors}")  # Логируем ошибки формы
         messages.error(self.request, "Ошибка при загрузке трека.")         # Добавляем сообщение об ошибке
         return self.render_to_response(self.get_context_data(form=form))   # Рендерим шаблон с формой и ошибками
+
+
 
 class RegisterView(DataMixin, CreateView):
     form_class = RegisterForm                                                  # Указываем форму RegisterForm для регистрации
@@ -660,53 +714,51 @@ class LogoutConfirmView(LoginRequiredMixin, ProfileContextMixin, DataMixin, Temp
     template_name = 'vibemusic/logout_confirm.html'
 
     def dispatch(self, request: HttpRequest, *args, **kwargs) -> HttpResponse:
+        """
+        Показывает страницу подтверждения выхода.
+        Если пользователь уже вышел — редирект на главную.
+        """
         if not request.user.is_authenticated:                                           # авторизован ли пользователь на данный момент.
-            logger.debug("LogoutConfirmView: пользователь уже вышел, перенаправляем на главную страницу")
-            return HttpResponseRedirect(reverse_lazy('vibemusic:home'))
-        return super().dispatch(request, *args, **kwargs)
+            logger.debug("LogoutConfirmView: user already logged out, redirecting to home page")
+            return HttpResponseRedirect(reverse_lazy('vibemusic:home'))                 # После выхода — кидаем пользователя на главную страницу (по имени маршрута)
+        return super().dispatch(request, *args, **kwargs)                               # Возвращаем полученные данные через родителя в класс. 
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context.update(self.get_context_menu(title='Подтверждение выхода'))
         return context
 
-    def post(self, request):
-        logger.debug(f"Logout attempt for user: {request.user.username if request.user.is_authenticated else 'anonymous'}")
+    def post(self, request: HttpRequest, *args, **kwargs) -> HttpResponse:
+        """
+        Обрабатывает подтверждение выхода и логирует пользователя.
+        """
+        username = request.user.username if request.user.is_authenticated else "anonymous"   # Если пользователь авторизован - взять его: Если нет — присвоить строку
+        logger.debug("LogoutConfirmView: logout attempt for user=%s", username)
+
         if request.user.is_authenticated:
-            request.session.flush()  # Полная очистка сессии
-            logout(request)  # Завершение сессии
-            logger.debug(f"Logout successful for user: {request.user.username}")
+            logout(request)  # Завершение сессии (корректно)
+            logger.debug("LogoutConfirmView: logout successful for user=%s", username)
+            messages.info(request, "Вы успешно вышли из аккаунта.")
         else:
-            logger.debug("User was not authenticated during logout")
-        response = HttpResponseRedirect(reverse_lazy('vibemusic:home'))
-        response.delete_cookie('sessionid')  # Явное удаление куки сессии
-        return response
+            logger.debug("LogoutConfirmView: user was not authenticated during logout")
+        return HttpResponseRedirect(reverse_lazy('vibemusic:home'))
     
     
 @login_required
 @require_POST
 def toggle_follow(request, pk):
+    profile_to_follow = get_object_or_404(Profile, user__id=pk)                # Ищем профиль по user.id = pk | 404, если не найден
+    user_profile = request.user.profile                                         # Профиль текущего пользователя.
     try:
-        profile_to_follow = Profile.objects.get(user__id=pk)                   # Находим профиль пользователя по ID
-        user_profile = request.user.profile                                   # Получаем профиль текущего пользователя
-        if user_profile != profile_to_follow:                                  # Проверяем, что пользователь не пытается подписаться на себя
-            if user_profile in profile_to_follow.followers.all():              # Проверяем, подписан ли уже пользователь
-                user_profile.following.remove(profile_to_follow)               # Удаляем подписку (отписка)
-                action = 'unfollowed'                                          # Устанавливаем действие как "отписка"
-                Activity.objects.create(                                       # Создаём запись активности
-                    user=request.user,
-                    message=f"Вы отписались от {profile_to_follow.user.username}"
-                )
-            else:                                                              # Если подписки нет
-                user_profile.following.add(profile_to_follow)                  # Добавляем подписку
-                action = 'followed'                                            # Устанавливаем действие как "подписка"
-                Activity.objects.create(                                       # Создаём запись активности
-                    user=request.user,
-                    message=f"Вы подписались на {profile_to_follow.user.username}"
-                )
-                if profile_to_follow.telegram_chat_id:                          # Проверяем наличие ID чата Telegram
-                    pass                                                      # Реализуйте отправку сообщения через Telegram API, если нужно
-            return JsonResponse({'success': True, 'action': action})            # Возвращаем JSON с успешным результатом
-        return JsonResponse({'success': False, 'error': 'Cannot follow yourself'})  # Возвращаем ошибку, если попытка подписки на себя
-    except Profile.DoesNotExist:
-        return JsonResponse({'success': False, 'error': 'Profile not found'})   # Возвращаем ошибку, если профиль не найден
+        result = toggle_follow_servise(user_profile, profile_to_follow)
+    except ValueError as exc:
+        logger.warning("toggle_follow: %s", exc)
+        return JsonResponse({'success': False, "error": str(exc)}, status=400)   # Возвращаем ошибку, если профиль не найден
+    
+    return JsonResponse(                                    # Возвращаем JSON-ответ клиенту
+        {                   
+            "status": "ok",                                 # всё прошло успешно
+            "action": result.action,                        # что произошло (followed / unfollowed)
+            "followers_count": result.followers_count,      # актуальное число подписчиков
+        }       
+    )
