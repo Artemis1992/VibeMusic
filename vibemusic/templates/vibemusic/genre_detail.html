@@ -1,0 +1,78 @@
+{% extends 'vibemusic/base.html' %}
+{% load static %}
+
+{% comment %} genre_detail.html — страница жанра с фоновым изображением в шапке {% endcomment %}
+
+{% block title %}{{ genre.name }} — Vibe Music{% endblock %}
+
+{% block header_content %}
+    <!-- Фон по жанру -->
+    <div style="
+        background-image: url('{% if genre.background_image %}{{ genre.background_image.url }}{% else %}{{ site_settings.header_image.url|default:'/static/vibemusic/images/placeholder.jpg' }}{% endif %}');
+        height: 100%; width: 100%; position: absolute; top: 0; left: 0;
+        background-size: cover; background-position: center; filter: brightness(0.7); z-index: -1;
+    "></div>
+
+    <!-- Заголовок жанра в шапке -->
+    <div class="container h-100 d-flex align-items-center">
+        <div class="header-title text-white p-3">
+            <h1>
+                {% if genre.icon %}
+                    <img src="{{ genre.icon.url }}" alt="{{ genre.name }}" style="width: 40px; height: 40px; margin-right: 15px; vertical-align: middle;">
+                {% endif %}
+                {{ genre.name }}
+            </h1>
+            {% if genre.description %}
+                <p class="lead mb-0">{{ genre.description }}</p>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+
+    <h3 class="mt-5">Посты</h3>
+    {% if posts %}
+        {% for post in posts %}
+            <div class="card mb-4 shadow-sm d-flex flex-row" style="min-height: 300px; border-radius: 10px; overflow: hidden;">
+                <!-- Фото (60%) -->
+                <div class="post-image" style="width: 60%; position: relative;">
+                    {% if post.images.first %}
+                        <img src="{{ post.images.first.image.url }}" alt="{{ post.images.first.caption|default:post.title }}" style="width: 100%; height: 100%; object-fit: cover;">
+                    {% else %}
+                        <img src="{% static 'vibemusic/images/placeholder.jpg' %}" alt="Placeholder" style="width: 100%; height: 100%; object-fit: cover;">
+                    {% endif %}
+                    <!-- Исполнитель -->
+                    <div class="position-absolute top-0 start-0 p-2" style="background: rgba(0, 0, 0, 0.7); border-radius: 0 0 5px 0;">
+                        <p class="mb-0 text-white">
+                            {% if post.artist and post.artist.slug %}
+                                <a href="{% url 'vibemusic:artist_detail' post.artist.slug %}"
+                                class="text-white text-decoration-none">
+                                    {{ post.artist.name }}
+                                </a>
+                            {% else %}
+                                <span class="text-white">{{ post.artist.name|default:"Неизвестный автор" }}</span>
+                            {% endif %}
+                        </p>
+                    </div>
+                    <!-- Кнопка -->
+                    <div class="position-absolute bottom-0 end-0 p-2">
+                        <a href="{% url 'vibemusic:post_detail' post.slug %}" class="btn btn-primary btn-sm">Читать дальше</a>
+                    </div>
+                </div>
+                <!-- Описание (40%) -->
+                <div class="card-body bg-secondary text-white d-flex flex-column justify-content-between" style="width: 40%; padding: 15px;">
+                    <div>
+                        <h2 class="card-title h5 mb-2">{{ post.title }}</h2>
+                        <p class="mb-0">{{ post.content|safe|truncatechars:200 }}</p>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    {% else %}
+        <p>Нет постов в этом жанре.</p>
+    {% endif %}
+
+</div>
+{% endblock %}

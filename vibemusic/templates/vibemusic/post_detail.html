@@ -1,0 +1,297 @@
+{% extends 'vibemusic/base.html' %}
+{% load static %}
+
+{% block title %}{{ post.title }} — Vibe Music{% endblock %}
+
+{% block header_content %}
+    <!-- Шапка с фото исполнителя -->
+    <div style="
+        background-image: url('{% if post.artist and post.artist.photo %}{{ post.artist.photo.url }}{% else %}{% static 'vibemusic/images/placeholder.jpg' %}{% endif %}');
+        height: 100%; width: 100%; position: absolute; top: 0; left: 0;
+        background-size: cover; background-position: 50% 10%; filter: brightness(0.9); z-index: -1;
+    "></div>
+
+    <div class="container h-100 d-flex flex-column justify-content-end">
+        <div class="header-title header-title-animated text-white p-3">
+            <h1>{{ post.title }}</h1>
+            <div class="d-flex align-items-center gap-3 flex-wrap">
+                {% if post.artist %}
+                    <p class="mb-0">
+                        <a href="{% url 'vibemusic:artist_detail' post.artist.id %}"
+                           class="text-white text-decoration-none">
+                            {{ post.artist.name }}
+                        </a>
+                    </p>
+                {% else %}
+                    <p class="mb-0">Неизвестный автор</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block content %}
+
+<!-- КОНТЕНТ В КОНТЕЙНЕРЕ -->
+<div class="container pb-5">  <!-- pb-5 = padding-bottom для плеера -->
+
+    <!-- Заголовок и лайк поста -->
+    {% comment %} <div class="d-flex align-items-center mb-4">
+        <h5 class="mb-0">Композиции {{ post.title }}</h5>
+        {% if user.is_authenticated %}
+            <button class="btn btn-link p-0 ms-3 like-post-btn" data-post-id="{{ post.id }}" data-liked="{% if user in post.liked_by.all %}true{% else %}false{% endif %}">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="{% if user in post.liked_by.all %}#ff5733{% else %}#ffffff{% endif %}" class="bi bi-heart-fill heart-icon" viewBox="0 0 16 16">
+                    <path fill-rule="evenodd" d="M8 1.314C12.438-3.248 23.534 4.735 8 15-7.534 4.736 3.562-3.248 8 1.314z"/>
+                </svg>
+                <span class="like-count">{{ post.liked_by.count }}</span>
+            </button>
+        {% endif %}
+    </div> {% endcomment %}
+
+    <!-- Кнопки под шапкой -->
+    <div class="mt-2 mb-4 d-flex justify-content-center gap-3">
+        {% if artist_bio %}
+            <button type="button" class="btn btn-primary btn-sm "
+                    data-bs-toggle="modal" data-bs-target="#artistBioModal">
+                Биография
+            </button>
+        {% endif %}
+
+        <button type="button" class="btn btn-primary btn-sm "
+                data-bs-toggle="modal" data-bs-target="#postContentModal">
+            О творчестве
+        </button>
+    </div>
+
+    <!-- Треки -->
+    {% if post.tracks.all %}
+        <div class="music-player-container d-flex flex-wrap gap-3 mb-5">
+            {% for track in post.tracks.all %}
+                <div class="track text-center">
+                    <div class="album-cover position-relative" data-src="{{ track.audio_file.url }}">
+                        <img src="{% if track.album_image %}{{ track.album_image.url }}{% else %}{{ MEDIA_URL }}{{ settings.DEFAULT_ALBUM_IMAGE }}{% endif %}" 
+                             class="album-image" style="width: 100px; height: 100px; object-fit: cover; cursor: pointer;">
+                        <button class="play-button position-absolute top-50 start-50 translate-middle">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="white" class="bi bi-play-fill play-icon" viewBox="0 0 16 16">
+                                <path d="M11.596 8.697l-6.363 3.692c-.54.313-1.233-.066-1.233-.697V4.308c0-.63.692-1.01 1.233-.696l6.363 3.692a.802 802 0 0 1 0 1.393z"/>
+                            </svg>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="white" class="bi bi-pause-fill pause-icon" viewBox="0 0 16 16" style="display: none;">
+                                <path d="M5.5 3.5A1.5 1.5 0 0 1 7 5v6a1.5 1.5 0 0 1-3 0V5a1.5 1.5 0 0 1 1.5-1.5zm5 0A1.5 1.5 0 0 1 12 5v6a1.5 1.5 0 0 1-3 0V5a1.5 1.5 0 0 1 1.5-1.5z"/>
+                            </svg>
+                        </button>
+                    </div>
+                    <p class="track-title mt-2 mb-0">{{ track.title }}</p>
+                    <button class="btn btn-link p-0 mt-1 like-track-btn" data-track-id="{{ track.id }}" data-liked="{% if user.is_authenticated and user in track.liked_by.all %}true{% else %}false{% endif %}">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="{% if user.is_authenticated and user in track.liked_by.all %}#ff5733{% else %}#ffffff{% endif %}" class="bi bi-heart-fill heart-icon" viewBox="0 0 16 16">
+                            <path fill-rule="evenodd" d="M8 1.314C12.438-3.248 23.534 4.735 8 15-7.534 4.736 3.562-3.248 8 1.314z"/>
+                        </svg>
+                        <span class="like-count">{{ track.liked_by.count }}</span>
+                    </button>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <!-- Комментарии -->
+    <div class="d-flex align-items-center justify-content-between mb-3">
+        <h3 class="mt-5 mb-0">Комментарии</h3>
+        <div class="comment-count-badge badge bg-secondary text-white px-3 py-2 rounded-pill d-flex align-items-center gap-2">
+            <span id="comment-count-value">{{ page_obj.paginator.count }}</span>
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-chat-dots" viewBox="0 0 16 16">
+                <path d="M2.5 2a.5.5 0 0 0-.5.5v9a.5.5 0 0 0 .5.5h11a.5.5 0 0 0 .5-.5v-9a.5.5 0 0 0-.5-.5h-11zM1 2.5A1.5 1.5 0 0 1 2.5 1h11A1.5 1.5 0 0 1 15 2.5v9a1.5 1.5 0 0 1-1.5 1.5h-11A1.5 1.5 0 0 1 1 11.5v-9z"/>
+                <circle cx="5" cy="8" r="1.5"/>
+                <circle cx="8" cy="8" r="1.5"/>
+                <circle cx="11" cy="8" r="1.5"/>
+            </svg>
+        </div>
+    </div>
+
+    <div class="comments-container" id="comments-container">
+        {% for comment in page_obj %}
+            {% include 'vibemusic/partials/comment_item.html' with comment=comment user=user %}
+        {% empty %}
+            <p class="text-muted">Нет комментариев.</p>
+        {% endfor %}
+    </div>
+
+    <!-- Пагинация -->
+    {% if page_obj.has_other_pages %}
+        <nav class="mt-4">
+            <ul class="pagination">
+                {% if page_obj.has_previous %}
+                    <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">Назад</a></li>
+                {% endif %}
+                <li class="page-item active"><span class="page-link">Страница {{ page_obj.number }} из {{ page_obj.paginator.num_pages }}</span></li>
+                {% if page_obj.has_next %}
+                    <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">Вперёд</a></li>
+                {% endif %}
+            </ul>
+        </nav>
+    {% endif %}
+
+    <!-- Форма комментария -->
+    {% if user.is_authenticated %}
+        <form method="post" action="{% url 'vibemusic:add_comment' post.slug %}" class="mt-4" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="comment-block p-3 rounded-3 shadow-sm">
+                <div class="d-flex gap-3 align-items-start">
+                    <div class="flex-grow-1">
+                        <textarea 
+                            name="content" 
+                            id="comment-content" 
+                            class="comment-textarea" 
+                            rows="5" 
+                            placeholder="Напишите ваш комментарий... (смайлики справа)" 
+                            style="white-space: pre-wrap; overflow-wrap: break-word;"
+                            required></textarea>
+                    </div>
+                    <div class="emoji-sidebar-container">
+                        <div class="emoji-sidebar">
+                            {% include 'vibemusic/partials/emoji_picker.html' %}
+                        </div>
+                    </div>
+                </div>
+                <div class="input-group mt-3">
+                    <input type="file" name="image" id="comment-image" class="form-control" accept="image/*">
+                    <button type="submit" class="btn btn-primary">Отправить</button>
+                </div>
+            </div>
+        </form>
+    {% else %}
+        <p class="text-muted mt-3"><a href="{% url 'login' %}" class="text-white">Войдите</a>, чтобы оставить комментарий.</p>
+    {% endif %}
+
+    <!-- Модальные окна -->
+    <div class="modal fade" id="postContentModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content bg-dark text-white">
+                <div class="modal-header">
+                    <h5 class="modal-title">{{ post.title }}</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">{{ post.content|linebreaks }}</div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if artist_bio %}
+        <div class="modal fade" id="artistBioModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content bg-dark text-white">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Биография: {{ post.artist.name }}</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">{{ artist_bio|linebreaks }}</div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
+</div> <!-- КОНЕЦ .container -->
+
+<!-- ПЛЕЕР — С РЕЖИМАМИ, БЕЗ gap-2, ВСЁ РАБОТАЕТ -->
+<div class="audio-player container-fluid fixed-bottom bg-dark p-2" 
+     style="display: none; z-index: 1050; height: 60px;">
+    <div class="container h-100 d-flex align-items-center px-3">
+
+        <!-- ПРЕДЫДУЩИЙ -->
+        <button class="btn btn-link text-white p-0 prev-track-btn me-2" title="Предыдущий трек">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24" class="track-arrow">
+                <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/>
+            </svg>
+        </button>
+
+        <!-- PLAY/PAUSE -->
+        <button class="play-pause-btn btn btn-link text-white p-0 me-3">
+            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="currentColor" class="bi bi-play-fill play-icon" viewBox="0 0 16 16">
+                <path d="M11.596 8.697l-6.363 3.692c-.54.313-1.233-.066-1.233-.697V4.308c0-.63.692-1.01 1.233-.696l6.363 3.692a.802 802 0 0 1 0 1.393z"/>
+            </svg>
+            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="currentColor" class="bi bi-pause-fill pause-icon" viewBox="0 0 16 16" style="display: none;">
+                <path d="M5.5 3.5A1.5 1.5 0 0 1 7 5v6a1.5 1.5 0 0 1-3 0V5a1.5 1.5 0 0 1 1.5-1.5zm5 0A1.5 1.5 0 0 1 12 5v6a1.5 1.5 0 0 1-3 0V5a1.5 1.5 0 0 1 1.5-1.5z"/>
+            </svg>
+        </button>
+
+        <!-- РЕЖИМЫ ВОСПРОИЗВЕДЕНИЯ -->
+        <div class="playback-mode d-flex align-items-center me-2">
+            <button class="btn btn-link text-white p-0 icon-button" id="mode-btn" title="Режим воспроизведения" data-msg="Режим изменён" data-icon="0">
+                <!-- Повтор трека -->
+                <svg class="mode-icon repeat-one" width="20" height="20" fill="currentColor" viewBox="0 0 16 16" style="display: none;">
+                    <path d="M0 4.75A.75.75 0 0 1 .75 4h11.5a.75.75 0 0 1 .75.75v4.5a.75.75 0 0 1-.75.75H.75a.75.75 0 0 1-.75-.75v-4.5zM1.5 6.5h10v1.5h-10V6.5z"/>
+                    <path d="M11 12.5a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1-.5-.5v-1z"/>
+                    <path d="M5.5 11.5a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h2a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5h-2z"/>
+                    <path d="M10.5 10.5l1 1-1 1"/>
+                </svg>
+                <!-- Повтор плейлиста -->
+                <svg class="mode-icon repeat-all" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
+                    <path d="M0 4.75A.75.75 0 0 1 .75 4h11.5a.75.75 0 0 1 .75.75v4.5a.75.75 0 0 1-.75.75H.75a.75.75 0 0 1-.75-.75v-4.5zM1.5 6.5h10v1.5h-10V6.5z"/>
+                    <path d="M11 12.5a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1-.5-.5v-1z"/>
+                    <path d="M5.5 11.5a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h2a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5h-2z"/>
+                    <path d="M10.5 10.5l1 1-1 1M5.5 10.5l-1 1 1 1"/>
+                </svg>
+                <!-- Случайный порядок -->
+                <svg class="mode-icon shuffle" width="20" height="20" fill="currentColor" viewBox="0 0 16 16" style="display: none;">
+                    <path d="M10.5 3.5a.5.5 0 0 0-.5-.5h-4a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h4a.5.5 0 0 0 .5-.5v-1z"/>
+                    <path d="M10.5 7.5a.5.5 0 0 0-.5-.5h-4a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h4a.5.5 0 0 0 .5-.5v-1z"/>
+                    <path d="M10.5 11.5a.5.5 0 0 0-.5-.5h-4a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h4a.5.5 0 0 0 .5-.5v-1z"/>
+                    <path d="M13.5 4.5l1 1-1 1M13.5 8.5l1 1-1 1M13.5 12.5l1 1-1 1"/>
+                </svg>
+            </button>
+        </div>
+
+        <!-- СЛЕДУЮЩИЙ -->
+        <button class="btn btn-link text-white p-0 next-track-btn me-3" title="Следующий трек">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24" class="track-arrow">
+                <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/>
+            </svg>
+        </button>
+
+        <!-- ПРОГРЕСС -->
+        <div class="progress-wrapper flex-grow-1 me-3">
+            <input type="range" id="progress" min="0" max="100" value="0" step="0.1" class="custom-range">
+        </div>
+
+        <!-- ГРОМКОСТЬ -->
+        <div class="volume-control d-flex align-items-center gap-1">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                <path d="M9.741.335a.5.5 0 0 1 .74.335l1.148 4.592a.5.5 0 0 1-.349.608l-1.148.287a.5.5 0 0 1-.608-.349l-.287-1.148a.5.5 0 0 1 .349-.608l1.148-.287z"/>
+                <path d="M8 3.5a.5.5 0 0 0-1 0v1a.5.5 0 0 0 1 0v-1z"/>
+                <path d="M5.5 2a.5.5 0 0 1 .5-.5h4a.5.5 0 0 1 0 1h-4a.5.5 0 0 1-.5-.5z"/>
+            </svg>
+            <input type="range" id="volume" min="0" max="100" value="100" step="1" class="volume-range">
+        </div>
+
+        <!-- СКАЧАТЬ -->
+        <a class="btn btn-link text-white" href="#" download id="download-btn">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
+                <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/>
+                <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z"/>
+            </svg>
+        </a>
+
+        <!-- АУДИО -->
+        <audio class="audio-element" style="display: none;">
+            <source src="" type="audio/mpeg">
+            Ваш браузер не поддерживает аудиоплеер.
+        </audio>
+    </div>
+</div>
+
+
+<!-- УВЕДОМЛЕНИЕ -->
+<div id="notification">
+    <span id="msg-text"></span>
+</div>
+<!-- Скрипты -->
+<link rel="stylesheet" href="{% static 'vibemusic/css/emoji_picker.css' %}">
+<script src="{% static 'vibemusic/js/emoji_picker.js' %}"></script>
+<script src="{% static 'vibemusic/js/add_comment.js' %}"></script>
+<script src="{% static 'vibemusic/js/music_player.js' %}"></script>
+
+{% endblock %}
