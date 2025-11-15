@@ -160,10 +160,7 @@ STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR / 'vibemusic/static']
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
-# учетные данные Spotify:
-# Для чтения метаданных из MP3-файлов устанавливаем библиотеку mutagen:
-SPOTIFY_CLIENT_ID = "9b9eedb0308a4800afcfab8a04618ee8"
-SPOTIFY_CLIENT_SECRET = "1654b0a4ed9441989c8439f0039d9d9b"
+
 
 # Media files
 MEDIA_URL = '/media/'
@@ -188,15 +185,16 @@ LOGOUT_REDIRECT_URL = 'vibemusic:home'  # Перенапровление пос�
 
 # Обработка отправки писем для сброса пароля, настройки SMTP
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'           # Django будет использовать SMTP-сервер для отправки писем (например, Gmail, Yandex, Mailgun, либо корпоративный сервер). 
+EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER")
+EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
+DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", EMAIL_HOST_USER)
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = 'artem.flowers1@gmail.com'                           # Ваш реальный email
-EMAIL_HOST_PASSWORD = 'qhns odzq gjxs rljx'                          # Пароль приложения Gmail
-DEFAULT_FROM_EMAIL = 'artem.flowers1@gmail.com'
-TELEGRAM_BOT_TOKEN = '8311811025:AAGB7PfqMPakk2a68EIhhf4fmygpZh1xf7g'   # Токен телеграмм бота
-TELEGRAM_BOT_USERNAME = 'VibeMusicResetBot'                           # Username бота без @
-TELEGRAM_GROUP_CHAT_ID = -1003219535178                                # Теперь мы можем использовать Chat ID -1003219535178 для отправки сообщений через бота.
+SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", SECRET_KEY)
+# Spotify API
+SPOTIFY_CLIENT_ID = os.getenv("SPOTIFY_CLIENT_ID")
+SPOTIFY_CLIENT_SECRET = os.getenv("SPOTIFY_CLIENT_SECRET")
 
 # EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'        # Отправка в консоль для сообщения 
 
